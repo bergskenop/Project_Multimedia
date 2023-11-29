@@ -14,6 +14,7 @@ def main():
     p = Puzzle(path, type_puzzel, aantal_rijen, aantal_kolommen)
     p.show()
     p.set_contours()
+    p.set_puzzelstuk_dimensies()
     p.draw_contours()
     p.draw_corners()
 

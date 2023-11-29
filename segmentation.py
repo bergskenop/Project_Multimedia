@@ -4,9 +4,7 @@ import numpy as np
 def process_puzzle(puzzle):
     puzzle_contours = get_puzzle_contours(puzzle.image, puzzle.rows, puzzle.columns)
     hoekpunten = retrieve_corners(puzzle.image, puzzle_contours)
-    h, b = getCorrectPuzzleSize(puzzle)
-    return puzzle_contours, hoekpunten, b, h
-
+    return puzzle_contours, hoekpunten
 
 def get_puzzle_contours(img, r, c):
     imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -60,6 +58,6 @@ def retrieve_corners(img, contours):
     return hoekpunten
 
 def getCorrectPuzzleSize(puzzle):
-    hoogte = puzzle.contourCorners[0][0][1] - puzzle.contourCorners[0][1][1]
-    breedte = puzzle.contourCorners[0][1][0] - puzzle.contourCorners[0][2][0]
+    hoogte = abs(puzzle.puzzle_pieces[0].corners[0][1] - puzzle.puzzle_pieces[0].corners[1][1])
+    breedte = abs(puzzle.puzzle_pieces[0].corners[1][0] - puzzle.puzzle_pieces[0].corners[2][0])
     return hoogte, breedte
