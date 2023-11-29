@@ -1,8 +1,5 @@
-import numpy as np
-from matplotlib import pyplot as plt
-import cv2
 import re
-from tkinter import filedialog
+
 
 
 def bepaal_puzzel_parameters(image_path):
