@@ -6,10 +6,6 @@ from tkinter import filedialog
 
 
 def bepaal_puzzel_parameters(image_path):
-    image = plt.imread(image_path)
-    plt.imshow(image)
-    plt.show()
-
     # 1 = shuffled, 2 = scrambled and 3 = rotated
     type_puzzle = 1
     if re.search(".+_scrambled_.+", image_path):
