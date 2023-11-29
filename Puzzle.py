@@ -12,9 +12,11 @@ class Puzzle:
         self.rows = rows
         self.columns = columns
         self.size = rows * columns
+        self.breedtepuzzelstuk = None
+        self.hoogtepuzzelstuk = None
 
     def set_contours(self):
-        self.contours, self.contourCorners = process_puzzle(self)
+        self.contours, self.contourCorners, self.breedtepuzzelstuk, self.hoogtepuzzelstuk = process_puzzle(self)
 
     def draw_contours(self):
         img_contours = self.image.copy()
