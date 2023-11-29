@@ -5,10 +5,6 @@ import re
 from tkinter import filedialog
 from puzzel_parameters import *
 
-path = filedialog.askopenfilename(initialdir="*/", title="Select image",
-                                      filetypes=(("Images", "*.png*"), ("all files", "*.*")))
-
-type_puzzel, aantal_rijen, aantal_kolommen = bepaal_puzzel_parameters(path)
 
 img = cv2.imread(path)
 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
