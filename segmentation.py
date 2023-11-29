@@ -3,8 +3,9 @@ import numpy as np
 
 def process_puzzle(puzzle):
     puzzle_contours = get_puzzle_contours(puzzle.image, puzzle.rows, puzzle.columns)
-    hoekpunten = retrieve_corners(puzzle.image, puzzle_contours, puzzle.columns, puzzle.rows)
-    return puzzle_contours
+    hoekpunten = retrieve_corners(puzzle.image, puzzle_contours)    #lijst van puzzle.size*4
+                                                                    # met 4 de opeenvolgende hoekpunten
+    return puzzle_contours, np.reshape(hoekpunten, (puzzle.size, 4))
 
 
 def get_puzzle_contours(img, r, c):
@@ -13,11 +14,6 @@ def get_puzzle_contours(img, r, c):
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     contours = sorted(contours, key=cv2.contourArea, reverse=True)
     return contours[:r*c]
-
-
-def rotate_piece(): #rotate piece around centre until straight edge is alligned
-
-    return 0
 
 
 def retrieve_corners(img, contours):

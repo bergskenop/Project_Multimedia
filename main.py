@@ -13,8 +13,8 @@ def main():
     type_puzzel, aantal_rijen, aantal_kolommen = bepaal_puzzel_parameters(path)
     p = Puzzle(path, type_puzzel, aantal_rijen, aantal_kolommen)
     p.set_contours()
-    p.show_puzzle()
-
+    p.show()
+    print(p.contourCorners)
 
 
 def process_all():

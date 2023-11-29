@@ -5,6 +5,7 @@ from segmentation import *
 class Puzzle:
     def __init__(self, image_path, type, rows, columns):
         self.contours = None
+        self.contourCorners = None
         self.image = cv2.imread(image_path)
         self.type = type
         self.rows = rows
@@ -12,7 +13,7 @@ class Puzzle:
         self.size = rows * columns
 
     def set_contours(self):
-        self.contours = process_puzzle(self)
+        self.contours, self.contourCorners = process_puzzle(self)
 
     def draw_contours(self):
         img_contours = self.image
