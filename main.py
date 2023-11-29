@@ -12,9 +12,11 @@ def main():
                                       filetypes=(("Images", "*.png*"), ("all files", "*.*")))
     type_puzzel, aantal_rijen, aantal_kolommen = bepaal_puzzel_parameters(path)
     p = Puzzle(path, type_puzzel, aantal_rijen, aantal_kolommen)
-    p.set_contours()
     p.show()
-    print(p.contourCorners)
+    p.set_contours()
+    p.draw_contours()
+    p.draw_corners()
+
 
 
 def process_all():
