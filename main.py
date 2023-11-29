@@ -7,7 +7,9 @@ from puzzel_parameters import *
 
 
 def main():
-    type_puzzel, aantal_rijen, aantal_kolommen = bepaal_puzzel_parameters()
+    path = filedialog.askopenfilename(initialdir="*/", title="Select image",
+                                      filetypes=(("Images", "*.png*"), ("all files", "*.*")))
+    type_puzzel, aantal_rijen, aantal_kolommen = bepaal_puzzel_parameters(path)
     print(type_puzzel, aantal_rijen, aantal_kolommen)
 
 

@@ -5,10 +5,7 @@ import re
 from tkinter import filedialog
 
 
-def bepaal_puzzel_parameters():
-    # Afbeelding selecteren
-    path = filedialog.askopenfilename(initialdir="*/", title="Select image",
-                                      filetypes=(("Images", "*.png*"), ("all files", "*.*")))
+def bepaal_puzzel_parameters(image_path):
     image = plt.imread(path)
     plt.imshow(image)
     plt.show()
