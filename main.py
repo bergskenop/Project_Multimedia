@@ -1,16 +1,15 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+import numpy as np
+from matplotlib import pyplot as plt
+import cv2
+import re
+from tkinter import filedialog
+from puzzel_parameters import *
 
 
-# Press the green button in the gutter to run the script.
+def main():
+    type_puzzel, aantal_rijen, aantal_kolommen = bepaal_puzzel_parameters()
+    print(type_puzzel, aantal_rijen, aantal_kolommen)
+
+
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    main()
