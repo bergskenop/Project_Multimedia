@@ -3,9 +3,8 @@ import numpy as np
 
 def process_puzzle(puzzle):
     puzzle_contours = get_puzzle_contours(puzzle.image, puzzle.rows, puzzle.columns)
-    hoekpunten = retrieve_corners(puzzle.image, puzzle_contours)    #lijst van puzzle.size*4
-                                                                    # met 4 de opeenvolgende hoekpunten
-    return puzzle_contours, np.reshape(hoekpunten, (puzzle.size, 4))
+    hoekpunten = retrieve_corners(puzzle.image, puzzle_contours)
+    return puzzle_contours, hoekpunten
 
 
 def get_puzzle_contours(img, r, c):
@@ -17,7 +16,8 @@ def get_puzzle_contours(img, r, c):
 
 
 def retrieve_corners(img, contours):
-    hoekpunten = []
+    hoekpunten = np.zeros((len(contours), 4), dtype=tuple)
+    j = 0
     for contour in contours:
         cont = contour.reshape((contour.shape[0], contour.shape[2]))
         cont = np.vstack([cont, [10, 10]])
@@ -52,7 +52,8 @@ def retrieve_corners(img, contours):
             x_nieuw = np.delete(x_nieuw, index)
             y_nieuw = np.delete(y_nieuw, index)
 
-        for i in range(len(x_nieuw)):
-            hoekpunten.append((x_nieuw[i], y_nieuw[i]))
+        for i in range(4):
+            hoekpunten[j][i] = (x_nieuw[i], y_nieuw[i])
+        j += 1
 
     return hoekpunten
