@@ -1,31 +1,29 @@
 from tkinter import filedialog
-from puzzel_parameters import *
-from segmentation import *
 import os
 from Puzzle import Puzzle
-import cv2
 
-directory = "data/"
 
 def main():
     path = filedialog.askopenfilename(initialdir="*/", title="Select image",
                                       filetypes=(("Images", "*.png*"), ("all files", "*.*")))
-    type_puzzel, aantal_rijen, aantal_kolommen = bepaal_puzzel_parameters(path)
-    p = Puzzle(path, type_puzzel, aantal_rijen, aantal_kolommen)
+    p = Puzzle(path)
+    p.initialise_puzzle()
     p.show()
-    p.set_contours()
-    p.set_puzzelstuk_dimensies()
     p.draw_contours()
     p.draw_corners()
+    # process_all("data/")
 
 
-
-def process_all():
+def process_all(directory):
     for subdir, dirs, files in os.walk(directory):
         for file in files:
             path = os.path.join(subdir, file)
-            type_puzzel, aantal_rijen, aantal_kolommen = bepaal_puzzel_parameters(path)
-            process_puzzle(path, type_puzzel, aantal_rijen*aantal_kolommen)
+            puzzle = Puzzle(path)
+            puzzle.initialise_puzzle()
+            puzzle.show()
+            puzzle.draw_contours()
+            puzzle.draw_corners()
+
 
 if __name__ == '__main__':
     main()

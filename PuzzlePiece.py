@@ -4,11 +4,5 @@ class PuzzlePiece:
         self.corners = corners
         self.edges = None
 
-    def set_points(self, points):
-        self.points = points
-
-    def set_corners(self, corners):
-        self.corners = corners
-
-    def set_edges(self, edges):
-        self.edges = edges
+    def set_edges(self):
+        self.edges = 0
