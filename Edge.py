@@ -1,7 +1,7 @@
 class Edge:
-    def __init__(self, type, hoeken):
+    def __init__(self, hoeken):
         self.type = None
-        self.hoeken = None
+        self.hoeken = hoeken
 
     def set_type(self, type):
         self.type = type
@@ -9,3 +9,6 @@ class Edge:
     def set_hoeken(self, hoeken):
         self.hoeken = hoeken
 
+    def print_edge(self):
+        for i, hoek in enumerate(self.hoeken):
+            print(f'Hoek {i}: {hoek} van het type {self.type}')

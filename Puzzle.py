@@ -3,32 +3,41 @@ import re
 import cv2
 import numpy as np
 
+# Logica achter klassenverdeling
+#   Elke puzzel bevat
+#       - Meerdere puzzelstukken
+#       - Bestandslocatie
+#       - Afbeelding van de puzzel
+#       - Vaste dimensies: (rijen; kolommen; aantal en grootte van puzzelstukken)
+#       - Opgeloste afbeelding van de puzzel
+
 
 class Puzzle:
     def __init__(self, image_path):
-        self.puzzle_pieces = []
-        self.contour_draw = None
-        self.image_path = image_path
-        self.image = cv2.imread(image_path)
-        self.type = 1
-        self.rows = 1
-        self.columns = 1
-        self.size = 1
-        self.width_puzzle_piece = None
-        self.height_puzzle_piece = None
+        self.puzzle_pieces = []                 # Bevat een lijst van verschillende puzzelstukken
+        self.contour_draw = None                # Bevat lijst van contouren, gebruik om puzzelstuk te omlijnen
+        self.image_path = image_path            # Self expl
+        self.image = cv2.imread(image_path)     # Self expl
+        self.type = 1                           # Type puzzel; 1: shuffled; 2: scrambled; 3: rotated
+        self.rows = 1                           # Self expl
+        self.columns = 1                        # Self expl
+        self.size = 1                           # Hoeveelheid puzzelstukken rows*columns
+        self.width_puzzle_piece = None          # Breedte van puzzelstukken
+        self.height_puzzle_piece = None         # Hoogte van puzzelstukken
+        self.solved_image = None                # Uiteindelijk resultaat komt hier terecht
 
     def initialise_puzzle(self):
-        self.set_puzzle_parameters()
-        self.set_contour_draw()
-        self.set_puzzle_pieces()
-        self.set_correct_puzzlepiece_size()
+        self.set_puzzle_parameters()            # Parameterbepaling uit filename
+        self.set_contour_draw()                 # Contour detectie van puzzelstukken
+        self.set_puzzle_pieces()                # Individuele puzzelstukken declareren: elk eigen contour en hoekpunten
+        self.set_correct_puzzlepiece_size()     # Grootte van puzzelstukken bepalen (uniforme verdeling)
 
     def set_puzzle_parameters(self):
         # 1 = shuffled, 2 = scrambled and 3 = rotated
         type_puzzle = 1
-        if re.search(".+_scrambled_.+", self.image_path):
+        if re.search('.+_scrambled_.+', self.image_path):
             type_puzzle = 2
-        elif re.search(".+_rotated_.+", self.image_path):
+        elif re.search('.+_rotated_.+', self.image_path):
             type_puzzle = 3
         self.type = type_puzzle
         # Bepaal aantal rijen en kolommen
@@ -37,6 +46,7 @@ class Puzzle:
         self.rows = rijen
         kolommen = int(str(re.compile("[0-9]$").findall(scale[0])[0]))
         self.columns = kolommen
+        self.size = self.rows*self.columns
 
     def set_contour_draw(self):
         img_gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
@@ -96,6 +106,6 @@ class Puzzle:
         img_corners = self.image.copy()
         for piece in self.puzzle_pieces:
             for corner in piece.corners:
-                cv2.circle(img_corners, corner, 2, (0, 255, 255), -1)
+                cv2.circle(img_corners, corner, 3, (0, 255, 255), -1)
         self.show(img_corners)
 
