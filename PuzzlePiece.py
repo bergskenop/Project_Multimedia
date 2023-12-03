@@ -1,4 +1,6 @@
 from Edge import *
+import numpy as np
+import cv2
 
 
 class PuzzlePiece:
@@ -12,9 +14,13 @@ class PuzzlePiece:
         for i in range(1, len(self.corners)):
             self.edges.append(Edge((self.corners[i - 1], self.corners[i])))
         self.edges.append(Edge((self.corners[len(self.corners) - 1], first_corner)))
-        for edge in self.edges:
-            # Implement functionality to determine edge type: inward, outward or flat
-            edge.set_type(None)
+
+        for i in range(0, len(self.edges)-1):
+            self.edges[i].set_points(self.points[self.points.index(self.edges[i].hoeken[0]):
+                                                 self.points.index(self.edges[i].hoeken[1])])
+        self.edges[3].set_points(self.points[self.points.index(self.edges[3].hoeken[0]):])
+        for i,edge in enumerate(self.edges):
+            edge.set_type(i)
 
     def print_puzzlepiece(self):
         print(f'Puzzelpiece heeft {len(self.points)} punten')
@@ -23,4 +29,3 @@ class PuzzlePiece:
         for i, edge in enumerate(self.edges):
             print(f'Puzzelpiece heeft als randen:')
             edge.print_edge()
-

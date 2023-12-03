@@ -3,6 +3,7 @@ import re
 import cv2
 import numpy as np
 
+
 # Logica achter klassenverdeling
 #   Elke puzzel bevat
 #       - Meerdere puzzelstukken
@@ -14,23 +15,23 @@ import numpy as np
 
 class Puzzle:
     def __init__(self, image_path):
-        self.puzzle_pieces = []                 # Bevat een lijst van verschillende puzzelstukken
-        self.contour_draw = None                # Bevat lijst van contouren, gebruik om puzzelstuk te omlijnen
-        self.image_path = image_path            # Self expl
-        self.image = cv2.imread(image_path)     # Self expl
-        self.type = 1                           # Type puzzel; 1: shuffled; 2: scrambled; 3: rotated
-        self.rows = 1                           # Self expl
-        self.columns = 1                        # Self expl
-        self.size = 1                           # Hoeveelheid puzzelstukken rows*columns
-        self.width_puzzle_piece = None          # Breedte van puzzelstukken
-        self.height_puzzle_piece = None         # Hoogte van puzzelstukken
-        self.solved_image = None                # Uiteindelijk resultaat komt hier terecht
+        self.puzzle_pieces = []  # Bevat een lijst van verschillende puzzelstukken
+        self.contour_draw = None  # Bevat lijst van contouren, gebruik om puzzelstuk te omlijnen
+        self.image_path = image_path  # Self expl
+        self.image = cv2.imread(image_path)  # Self expl
+        self.type = 1  # Type puzzel; 1: shuffled; 2: scrambled; 3: rotated
+        self.rows = 1  # Self expl
+        self.columns = 1  # Self expl
+        self.size = 1  # Hoeveelheid puzzelstukken rows*columns
+        self.width_puzzle_piece = None  # Breedte van puzzelstukken
+        self.height_puzzle_piece = None  # Hoogte van puzzelstukken
+        self.solved_image = None  # Uiteindelijk resultaat komt hier terecht
 
     def initialise_puzzle(self):
-        self.set_puzzle_parameters()            # Parameterbepaling uit filename
-        self.set_contour_draw()                 # Contour detectie van puzzelstukken
-        self.set_puzzle_pieces()                # Individuele puzzelstukken declareren: elk eigen contour en hoekpunten
-        self.set_correct_puzzlepiece_size()     # Grootte van puzzelstukken bepalen (uniforme verdeling)
+        self.set_puzzle_parameters()  # Parameterbepaling uit filename
+        self.set_contour_draw()  # Contour detectie van puzzelstukken
+        self.set_puzzle_pieces()  # Individuele puzzelstukken declareren: elk eigen contour en hoekpunten
+        self.set_correct_puzzlepiece_size()  # Grootte van puzzelstukken bepalen (uniforme verdeling)
 
     def set_puzzle_parameters(self):
         # 1 = shuffled, 2 = scrambled and 3 = rotated
@@ -46,7 +47,7 @@ class Puzzle:
         self.rows = rijen
         kolommen = int(str(re.compile("[0-9]$").findall(scale[0])[0]))
         self.columns = kolommen
-        self.size = self.rows*self.columns
+        self.size = self.rows * self.columns
 
     def set_contour_draw(self):
         img_gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
@@ -56,7 +57,7 @@ class Puzzle:
         self.contour_draw = contours[:self.rows * self.columns]
 
     def set_puzzle_pieces(self):
-        for contours in self.contour_draw:
+        for piece_n, contours in enumerate(self.contour_draw):
             contour = np.squeeze(contours)
             contour = np.vstack([contour, [10, 10]])
             distances = np.linalg.norm(np.diff(contour, axis=0), axis=1)
@@ -82,8 +83,10 @@ class Puzzle:
                 corners.append((contour[i][0], contour[i][1]))
             contours = np.squeeze(contours)
             list_contours = list(zip(contours[:, 0], contours[:, 1]))
+
             puzzle_piece = PuzzlePiece(list_contours, corners)
             puzzle_piece.set_edges()
+            # puzzle_piece.print_puzzlepiece() # information about individual puzzlepiece
             self.puzzle_pieces.append(puzzle_piece)
 
     def set_correct_puzzlepiece_size(self):
@@ -108,4 +111,3 @@ class Puzzle:
             for corner in piece.corners:
                 cv2.circle(img_corners, corner, 3, (0, 255, 255), -1)
         self.show(img_corners)
-
