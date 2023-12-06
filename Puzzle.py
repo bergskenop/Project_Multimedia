@@ -35,14 +35,12 @@ class Puzzle:
         self.set_correct_puzzlepiece_size()  # Grootte van puzzelstukken bepalen (uniforme verdeling)
 
     def set_puzzle_parameters(self):
-        # 1 = shuffled, 2 = scrambled and 3 = rotated
         type_puzzle = 1
         if re.search('.+_scrambled_.+', self.image_path):
             type_puzzle = 2
         elif re.search('.+_rotated_.+', self.image_path):
             type_puzzle = 3
         self.type = type_puzzle
-        # Bepaal aantal rijen en kolommen
         scale = re.compile("[0-9][x][0-9]").findall(self.image_path)
         rijen = int(str(re.compile("^[0-9]").findall(scale[0])[0]))
         self.rows = rijen
@@ -66,7 +64,7 @@ class Puzzle:
             contour = np.squeeze(contours)
             contour = np.vstack([contour, [10, 10]])
             distances = np.linalg.norm(np.diff(contour, axis=0), axis=1)
-            # Later min distance robuuster maken
+            # Later min distance robuuster maken?
             contour = np.squeeze(np.array([contour[i] for i in np.where(distances > 7)]))
 
             unique_elements, counts = np.unique(contour[:, 0], return_counts=True)
@@ -87,12 +85,11 @@ class Puzzle:
             for i in range(4):
                 corners.append((contour[i][0], contour[i][1]))
             contours_fully = np.squeeze(self.contour_draw_fully[piece_n])
-            # contours = np.squeeze(contours)
             list_contours = list(zip(contours_fully[:, 0], contours_fully[:, 1]))
 
             puzzle_piece = PuzzlePiece(list_contours, corners)
             puzzle_piece.set_edges(abs(corners[1][0] - corners[2][0]),
-                                   abs(corners[0][1] - corners[1][1]))
+                                   abs(corners[0][1] - corners[1][1]), self.image.copy())
             self.puzzle_pieces.append(puzzle_piece)
 
             # Elke puzzlepiece wordt een cutout van de originele afbeelding meegegeven.
@@ -138,7 +135,6 @@ class Puzzle:
         img_contours = np.zeros_like(self.image)
         # img_contours = self.image.copy()
         cv2.drawContours(img_contours, self.contour_draw, -1, (0, 255, 0), 1)
-        # cv2.drawContours(img_contours, self.contour_draw_fully, -1, (0, 255, 0), 1)
         self.show(img_contours)
 
     def draw_corners(self):
