@@ -16,7 +16,7 @@ class PuzzlePiece:
     def get_piece(self):
         return self.piece
 
-    def set_edges(self, image, width, height):
+    def set_edges(self, width, height):
         first_corner = self.corners[0]
         for i in range(1, len(self.corners)):
             self.edges.append(Edge((self.corners[i - 1], self.corners[i])))
@@ -30,7 +30,7 @@ class PuzzlePiece:
         self.edges[3].set_points(rij)
         for i, edge in enumerate(self.edges):
             edge.set_type(i, width, height)
-            edge.detect_all_edge_points(image)
+            edge.detect_all_edge_points()
             # edge.print_edge()
 
     def get_edges(self):

@@ -91,7 +91,7 @@ class Puzzle:
             list_contours = list(zip(contours_fully[:, 0], contours_fully[:, 1]))
 
             puzzle_piece = PuzzlePiece(list_contours, corners)
-            puzzle_piece.set_edges(np.zeros_like(self.image), abs(corners[1][0] - corners[2][0]),
+            puzzle_piece.set_edges(abs(corners[1][0] - corners[2][0]),
                                    abs(corners[0][1] - corners[1][1]))
             self.puzzle_pieces.append(puzzle_piece)
 

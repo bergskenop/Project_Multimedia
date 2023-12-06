@@ -65,7 +65,7 @@ class Edge:
     # histogram we want alle points along the edge, for that we draw the edge with the few edge points and we apply
     # masking to detect all the points on the edge. Afterwards we calculate the color histogram of the edge so we can
     # use it to match with other edges later.
-    def detect_all_edge_points(self, image):
+    def detect_all_edge_points(self):
         return 0
         # contour = [np.array(self.edge_points).reshape((len(self.edge_points), 1, 2))]
         # cv2.drawContours(image, contour, -1, (0, 255, 0), 1)
