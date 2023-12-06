@@ -85,6 +85,8 @@ class Puzzle:
             list_contours = list(zip(contours[:, 0], contours[:, 1]))
 
             puzzle_piece = PuzzlePiece(list_contours, corners)
+            puzzle_piece.set_edges(np.zeros_like(self.image))
+            self.puzzle_pieces.append(puzzle_piece)
 
             # Elke puzzlepiece wordt een cutout van de originele afbeelding meegegeven.
             points = puzzle_piece.get_points()
@@ -94,9 +96,8 @@ class Puzzle:
             puzzle_piece.set_piece(self.image[min(points, key=lambda x: x[0])[0]:max(points, key=lambda x: x[0])[0],
                                    min(points, key=lambda x: x[1])[0]:max(points, key=lambda x: x[1])[0],
                                    :])
-            puzzle_piece.set_edges()
+
             # puzzle_piece.print_puzzlepiece() # information about individual puzzlepiece
-            self.puzzle_pieces.append(puzzle_piece)
 
     def set_correct_puzzlepiece_size(self):
         self.height_puzzle_piece = abs(self.puzzle_pieces[0].corners[0][1] - self.puzzle_pieces[0].corners[1][1])
