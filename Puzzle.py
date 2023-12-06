@@ -67,7 +67,7 @@ class Puzzle:
             contour = np.vstack([contour, [10, 10]])
             distances = np.linalg.norm(np.diff(contour, axis=0), axis=1)
             # Later min distance robuuster maken
-            contour = np.squeeze(np.array([contour[i] for i in np.where(distances > 10)]))
+            contour = np.squeeze(np.array([contour[i] for i in np.where(distances > 2)]))
 
             unique_elements, counts = np.unique(contour[:, 0], return_counts=True)
             elements_to_remove = unique_elements[counts == 1]
@@ -101,7 +101,7 @@ class Puzzle:
                 print(f'Min: ({min(points, key=lambda x: x[0])[0]},{min(points, key=lambda x: x[1])[1]})')
                 print(f'Max: ({max(points, key=lambda x: x[0])[0]},{max(points, key=lambda x: x[1])[1]})')
             puzzle_piece.set_piece(self.image[min(points, key=lambda x: x[0])[0]:max(points, key=lambda x: x[0])[0],
-                                   min(points, key=lambda x: x[1])[0]:max(points, key=lambda x: x[1])[0],
+                                   min(points, key=lambda x: x[0])[1]:max(points, key=lambda x: x[0])[1],
                                    :])
 
             # puzzle_piece.print_puzzlepiece() # information about individual puzzlepiece
@@ -109,6 +109,18 @@ class Puzzle:
     def set_correct_puzzlepiece_size(self):
         self.height_puzzle_piece = abs(self.puzzle_pieces[0].corners[0][1] - self.puzzle_pieces[0].corners[1][1])
         self.width_puzzle_piece = abs(self.puzzle_pieces[0].corners[1][0] - self.puzzle_pieces[0].corners[2][0])
+
+    def type_based_matching(self):
+        # Shuffled 2x2 solver
+        self.solved_image = np.zeros_like(self.image)
+        for piece in self.puzzle_pieces:
+            # Check if piece is top left corner
+            piece_img = piece.get_piece()
+            if piece.get_edges()[0].get_type() == 'straight' and piece.get_edges()[3].get_type() == 'straight':
+                print(self.solved_image[:self.width_puzzle_piece, :self.height_puzzle_piece, :].shape)
+                print(piece.get_piece().shape)
+                self.solved_image[:piece_img.shape[0], :piece_img.shape[1], :] = piece_img
+
 
     def show(self, img=None):
         if img is None:

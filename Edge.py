@@ -55,6 +55,9 @@ class Edge:
     def get_points(self):
         return self.points
 
+    def get_type(self):
+        return self.type
+
     def print_edge(self):
         print(f'Hoeken : {self.hoeken} van het type {self.type} met {len(self.edge_points)} punten')
 

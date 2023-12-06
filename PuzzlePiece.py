@@ -13,6 +13,9 @@ class PuzzlePiece:
     def set_piece(self, image):
         self.piece = image
 
+    def get_piece(self):
+        return self.piece
+
     def set_edges(self, image, width, height):
         first_corner = self.corners[0]
         for i in range(1, len(self.corners)):
