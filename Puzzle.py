@@ -56,7 +56,7 @@ class Puzzle:
         contours = sorted(contours, key=cv2.contourArea, reverse=True)
         self.contour_draw = contours[:self.rows * self.columns]
 
-    def set_puzzle_pieces(self):
+    def set_puzzle_pieces(self, comment=False):
         for piece_n, contours in enumerate(self.contour_draw):
             contour = np.squeeze(contours)
             contour = np.vstack([contour, [10, 10]])
@@ -78,6 +78,9 @@ class Puzzle:
                 indexes2.append(np.where(contour[:, 1] == i))
             contour = np.delete(contour, indexes2, axis=0)
 
+            # Wat gebeurd er hier?
+            # Geeft een foute point list voor rechthoekige afbeeldingen.
+            # Corners zijn wel correct
             corners = []
             for i in range(4):
                 corners.append((contour[i][0], contour[i][1]))
@@ -85,9 +88,20 @@ class Puzzle:
             list_contours = list(zip(contours[:, 0], contours[:, 1]))
 
             puzzle_piece = PuzzlePiece(list_contours, corners)
+
+            # Elke puzzlepiece wordt een cutout van de originele afbeelding meegegeven.
+            points = puzzle_piece.get_points()
+            if comment:
+                print(f'Min: ({min(points, key=lambda x: x[0])[1]},{min(points, key=lambda x: x[1])[0]})')
+                print(f'Max: ({max(points, key=lambda x: x[0])[1]},{max(points, key=lambda x: x[1])[0]})')
+            puzzle_piece.set_piece(self.image[min(points, key=lambda x: x[0])[0]:max(points, key=lambda x: x[0])[0],
+                                   min(points, key=lambda x: x[1])[1]:max(points, key=lambda x: x[1])[1],
+                                   :])
             puzzle_piece.set_edges()
             # puzzle_piece.print_puzzlepiece() # information about individual puzzlepiece
             self.puzzle_pieces.append(puzzle_piece)
+            print(len(self.contour_draw))
+            puzzle_piece.show_puzzlepiece()
 
     def set_correct_puzzlepiece_size(self):
         self.height_puzzle_piece = abs(self.puzzle_pieces[0].corners[0][1] - self.puzzle_pieces[0].corners[1][1])
@@ -101,8 +115,9 @@ class Puzzle:
         cv2.waitKey(0)
 
     def draw_contours(self):
-        img_contours = self.image.copy()
-        cv2.drawContours(img_contours, self.contour_draw, -1, (0, 255, 0), 3)
+        img_contours = np.zeros_like(self.image)
+        # img_contours = self.image.copy()
+        cv2.drawContours(img_contours, self.contour_draw, -1, (0, 255, 0), 1)
         self.show(img_contours)
 
     def draw_corners(self):
@@ -110,4 +125,15 @@ class Puzzle:
         for piece in self.puzzle_pieces:
             for corner in piece.corners:
                 cv2.circle(img_corners, corner, 3, (0, 255, 255), -1)
-        self.show(img_corners)
+                self.show(img_corners)
+
+    def draw_edge(self):
+        for piece in self.puzzle_pieces:
+            for edge in piece.get_edges():
+                return 0
+
+    # set_descriptors genereert voor elk puzzelstuk een descriptor van elke rand.
+    # Via deze descriptor kunnen de puzzelstukken vervolgens met elkaar gematched worden.
+    def set_descriptors(self):
+        for piece in self.puzzle_pieces:
+            piece.set_descriptors()
