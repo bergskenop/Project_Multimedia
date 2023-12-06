@@ -13,21 +13,20 @@ class PuzzlePiece:
     def set_piece(self, image):
         self.piece = image
 
-    def set_edges(self, image):
+    def set_edges(self, image, width, height):
         first_corner = self.corners[0]
         for i in range(1, len(self.corners)):
             self.edges.append(Edge((self.corners[i - 1], self.corners[i])))
         self.edges.append(Edge((self.corners[len(self.corners) - 1], first_corner)))
 
         for i in range(0, len(self.edges) - 1):
-            print(i)
             self.edges[i].set_points(self.points[self.points.index(self.edges[i].hoeken[0]):
                                                  self.points.index(self.edges[i].hoeken[1])+1])
         rij = self.points[self.points.index(self.edges[3].hoeken[0]):]
         rij = rij + self.points[:self.points.index(self.edges[3].hoeken[1])+1]
         self.edges[3].set_points(rij)
         for i, edge in enumerate(self.edges):
-            edge.set_type(i)
+            edge.set_type(i, width, height)
             edge.detect_all_edge_points(image)
             # edge.print_edge()
 
