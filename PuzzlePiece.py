@@ -12,13 +12,14 @@ class PuzzlePiece:
 
     def set_piece(self, image):
         self.piece = image
+
     def set_edges(self):
         first_corner = self.corners[0]
         for i in range(1, len(self.corners)):
             self.edges.append(Edge((self.corners[i - 1], self.corners[i])))
         self.edges.append(Edge((self.corners[len(self.corners) - 1], first_corner)))
 
-        for i in range(0, len(self.edges)-1):
+        for i in range(0, len(self.edges) - 1):
             self.edges[i].set_points(self.points[self.points.index(self.edges[i].hoeken[0]):
                                                  self.points.index(self.edges[i].hoeken[1])])
         self.edges[3].set_points(self.points[self.points.index(self.edges[3].hoeken[0]):])
@@ -31,13 +32,12 @@ class PuzzlePiece:
     def get_points(self):
         return self.points
 
-    def set_descriptors(self):
-        for edge in self.edges:
-            edge.set_descriptors()
     def show_puzzlepiece(self):
-        cv2.imshow(f'Puzzlepiece', self.piece)
-        cv2.waitKey(0)
-        cv2.destroyWindow('Puzzlepiece')
+        if self.piece is not None:
+            cv2.imshow(f'Puzzlepiece', self.piece)
+            cv2.waitKey(0)
+            cv2.destroyWindow('Puzzlepiece')
+
     def print_puzzlepiece(self):
         print(f'Puzzelpiece heeft {len(self.points)} punten')
         print(f'Puzzelpiece heeft {len(self.corners)} hoeken')

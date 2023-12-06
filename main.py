@@ -8,11 +8,10 @@ def main():
                                       filetypes=(("Images", "*.png*"), ("all files", "*.*")))
     p = Puzzle(path)
     p.initialise_puzzle()
-    p.show()
+    # p.show()
     p.draw_contours()
     p.draw_corners()
     # process_all("data/")
-    p.set_descriptors()
 
 
 def process_all(directory):
@@ -21,9 +20,9 @@ def process_all(directory):
             path = os.path.join(subdir, file)
             puzzle = Puzzle(path)
             puzzle.initialise_puzzle()
-            puzzle.show()
-            puzzle.draw_contours()
-            puzzle.draw_corners()
+            # puzzle.show()
+            # puzzle.draw_contours()
+            # puzzle.draw_corners()
 
 
 if __name__ == '__main__':

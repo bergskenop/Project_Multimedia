@@ -78,9 +78,6 @@ class Puzzle:
                 indexes2.append(np.where(contour[:, 1] == i))
             contour = np.delete(contour, indexes2, axis=0)
 
-            # Wat gebeurd er hier?
-            # Geeft een foute point list voor rechthoekige afbeeldingen.
-            # Corners zijn wel correct
             corners = []
             for i in range(4):
                 corners.append((contour[i][0], contour[i][1]))
@@ -92,16 +89,14 @@ class Puzzle:
             # Elke puzzlepiece wordt een cutout van de originele afbeelding meegegeven.
             points = puzzle_piece.get_points()
             if comment:
-                print(f'Min: ({min(points, key=lambda x: x[0])[1]},{min(points, key=lambda x: x[1])[0]})')
-                print(f'Max: ({max(points, key=lambda x: x[0])[1]},{max(points, key=lambda x: x[1])[0]})')
+                print(f'Min: ({min(points, key=lambda x: x[0])[0]},{min(points, key=lambda x: x[1])[1]})')
+                print(f'Max: ({max(points, key=lambda x: x[0])[0]},{max(points, key=lambda x: x[1])[1]})')
             puzzle_piece.set_piece(self.image[min(points, key=lambda x: x[0])[0]:max(points, key=lambda x: x[0])[0],
-                                   min(points, key=lambda x: x[1])[1]:max(points, key=lambda x: x[1])[1],
+                                   min(points, key=lambda x: x[1])[0]:max(points, key=lambda x: x[1])[0],
                                    :])
             puzzle_piece.set_edges()
             # puzzle_piece.print_puzzlepiece() # information about individual puzzlepiece
             self.puzzle_pieces.append(puzzle_piece)
-            print(len(self.contour_draw))
-            puzzle_piece.show_puzzlepiece()
 
     def set_correct_puzzlepiece_size(self):
         self.height_puzzle_piece = abs(self.puzzle_pieces[0].corners[0][1] - self.puzzle_pieces[0].corners[1][1])
@@ -126,14 +121,3 @@ class Puzzle:
             for corner in piece.corners:
                 cv2.circle(img_corners, corner, 3, (0, 255, 255), -1)
                 self.show(img_corners)
-
-    def draw_edge(self):
-        for piece in self.puzzle_pieces:
-            for edge in piece.get_edges():
-                return 0
-
-    # set_descriptors genereert voor elk puzzelstuk een descriptor van elke rand.
-    # Via deze descriptor kunnen de puzzelstukken vervolgens met elkaar gematched worden.
-    def set_descriptors(self):
-        for piece in self.puzzle_pieces:
-            piece.set_descriptors()

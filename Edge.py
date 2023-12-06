@@ -3,6 +3,7 @@ import cv2
 from scipy.interpolate import CubicSpline
 import matplotlib.pyplot as plt
 
+
 class Edge:
     def __init__(self, hoeken, points=None):
         self.edge_points = points
@@ -38,7 +39,6 @@ class Edge:
                 self.type = 'innie'
         return 0
 
-
     def set_hoeken(self, hoeken):
         self.hoeken = hoeken
 
@@ -48,8 +48,7 @@ class Edge:
 
     def get_points(self):
         return self.points
-    def set_descriptors(self):
-        return 0
+
 
     def print_edge(self):
         print(f'Hoeken : {self.hoeken} van het type {self.type} met {len(self.edge_points)} punten')
