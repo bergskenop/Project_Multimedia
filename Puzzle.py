@@ -116,13 +116,36 @@ class Puzzle:
         # Shuffled 2x2 solver
         self.solved_image = np.zeros_like(self.image)
         for piece in self.puzzle_pieces:
-            # Check if piece is top left corner
-            # piece.show_puzzlepiece()
+            min_x, min_y, max_x, max_y = 0, 0, 0, 0
+            # Allign cornerpieces
             piece_img = piece.get_piece()
             if piece.get_edges()[0].get_type() == 'straight' and piece.get_edges()[3].get_type() == 'straight':
-                self.solved_image[:piece_img.shape[0], :piece_img.shape[1], :] = piece_img
+                # Top left
+                min_x, min_y = 0, 0
+                max_x = piece_img.shape[0]
+                max_y = piece_img.shape[1]
+
             elif piece.get_edges()[0].get_type() == 'straight' and piece.get_edges()[1].get_type() == 'straight':
-                self.solved_image[piece_img.shape[0]:, :piece_img.shape[1], :] = piece_img
+                # Bottom left
+                min_x = (self.height_puzzle_piece * self.rows) - piece_img.shape[0]
+                max_x = self.height_puzzle_piece * self.columns
+                min_y = 0
+                max_y = piece_img.shape[1]
+            elif piece.get_edges()[1].get_type() == 'straight' and piece.get_edges()[2].get_type() == 'straight':
+                # Bottom right
+                min_x = (self.height_puzzle_piece * self.rows) - piece_img.shape[0]
+                max_x = self.height_puzzle_piece * self.columns
+                min_y = (self.width_puzzle_piece * self.columns) - piece_img.shape[1]
+                max_y = self.width_puzzle_piece * self.rows
+            elif piece.get_edges()[2].get_type() == 'straight' and piece.get_edges()[3].get_type() == 'straight':
+                # Top right
+                min_x = 0
+                max_x = piece_img.shape[0]
+                min_y = (self.width_puzzle_piece * self.columns) - piece_img.shape[1]
+                max_y = self.width_puzzle_piece * self.rows
+            if max_x != 0:
+                self.solved_image[min_x:max_x, min_y:max_y, :] = piece_img
+            self.show(self.solved_image)
 
     def show(self, img=None):
         if img is None:
