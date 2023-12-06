@@ -31,7 +31,7 @@ class Puzzle:
     def initialise_puzzle(self):
         self.set_puzzle_parameters()  # Parameterbepaling uit filename
         self.set_contour_draw()  # Contour detectie van puzzelstukken
-        self.set_puzzle_pieces()  # Individuele puzzelstukken declareren: elk eigen contour en hoekpunten
+        self.set_puzzle_pieces(True)  # Individuele puzzelstukken declareren: elk eigen contour en hoekpunten
         self.set_correct_puzzlepiece_size()  # Grootte van puzzelstukken bepalen (uniforme verdeling)
 
     def set_puzzle_parameters(self):
@@ -67,7 +67,7 @@ class Puzzle:
             contour = np.vstack([contour, [10, 10]])
             distances = np.linalg.norm(np.diff(contour, axis=0), axis=1)
             # Later min distance robuuster maken
-            contour = np.squeeze(np.array([contour[i] for i in np.where(distances > 2)]))
+            contour = np.squeeze(np.array([contour[i] for i in np.where(distances > 7)]))
 
             unique_elements, counts = np.unique(contour[:, 0], return_counts=True)
             elements_to_remove = unique_elements[counts == 1]
@@ -97,13 +97,18 @@ class Puzzle:
 
             # Elke puzzlepiece wordt een cutout van de originele afbeelding meegegeven.
             points = puzzle_piece.get_points()
+            print(len(points))
             if comment:
-                print(f'Min: ({min(points, key=lambda x: x[0])[0]},{min(points, key=lambda x: x[1])[1]})')
-                print(f'Max: ({max(points, key=lambda x: x[0])[0]},{max(points, key=lambda x: x[1])[1]})')
-            puzzle_piece.set_piece(self.image[min(points, key=lambda x: x[0])[0]:max(points, key=lambda x: x[0])[0],
-                                   min(points, key=lambda x: x[0])[1]:max(points, key=lambda x: x[0])[1],
-                                   :])
+                print(f'X: ({min(points, key=lambda x: x[0])[0]} -> {max(points, key=lambda x: x[0])[0]})')
+                print(f'Y: ({min(points, key=lambda x: x[1])[1]} -> {max(points, key=lambda x: x[1])[1]})')
 
+            min_x = min(points, key=lambda x: x[0])[0]
+            max_x = max(points, key=lambda x: x[0])[0]
+            min_y = min(points, key=lambda x: x[1])[1]
+            max_y = max(points, key=lambda x: x[1])[1]
+
+            puzzle_piece.set_piece(self.image[min_y:max_y, min_x:max_x, :])
+            # puzzle_piece.show_puzzlepiece()
             # puzzle_piece.print_puzzlepiece() # information about individual puzzlepiece
 
     def set_correct_puzzlepiece_size(self):
@@ -115,12 +120,12 @@ class Puzzle:
         self.solved_image = np.zeros_like(self.image)
         for piece in self.puzzle_pieces:
             # Check if piece is top left corner
+            # piece.show_puzzlepiece()
             piece_img = piece.get_piece()
             if piece.get_edges()[0].get_type() == 'straight' and piece.get_edges()[3].get_type() == 'straight':
-                print(self.solved_image[:self.width_puzzle_piece, :self.height_puzzle_piece, :].shape)
-                print(piece.get_piece().shape)
                 self.solved_image[:piece_img.shape[0], :piece_img.shape[1], :] = piece_img
-
+            elif piece.get_edges()[0].get_type() == 'straight' and piece.get_edges()[1].get_type() == 'straight':
+                self.solved_image[piece_img.shape[0]:, :piece_img.shape[1], :] = piece_img
 
     def show(self, img=None):
         if img is None:
