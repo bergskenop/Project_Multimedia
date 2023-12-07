@@ -2,6 +2,7 @@ from PuzzlePiece import *
 import re
 import cv2
 import numpy as np
+from helper import *
 
 
 # Logica achter klassenverdeling
@@ -31,7 +32,7 @@ class Puzzle:
     def initialise_puzzle(self):
         self.set_puzzle_parameters()  # Parameterbepaling uit filename
         self.set_contour_draw()  # Contour detectie van puzzelstukken
-        self.set_puzzle_pieces(True)  # Individuele puzzelstukken declareren: elk eigen contour en hoekpunten
+        self.set_puzzle_pieces()  # Individuele puzzelstukken declareren: elk eigen contour en hoekpunten
         self.set_correct_puzzlepiece_size()  # Grootte van puzzelstukken bepalen (uniforme verdeling)
 
     def set_puzzle_parameters(self):
@@ -94,7 +95,6 @@ class Puzzle:
 
             # Elke puzzlepiece wordt een cutout van de originele afbeelding meegegeven.
             points = puzzle_piece.get_points()
-            print(len(points))
             if comment:
                 print(f'X: ({min(points, key=lambda x: x[0])[0]} -> {max(points, key=lambda x: x[0])[0]})')
                 print(f'Y: ({min(points, key=lambda x: x[1])[1]} -> {max(points, key=lambda x: x[1])[1]})')
@@ -114,38 +114,7 @@ class Puzzle:
 
     def type_based_matching(self):
         # Shuffled 2x2 solver
-        self.solved_image = np.zeros_like(self.image)
-        for piece in self.puzzle_pieces:
-            min_x, min_y, max_x, max_y = 0, 0, 0, 0
-            # Allign cornerpieces
-            piece_img = piece.get_piece()
-            if piece.get_edges()[0].get_type() == 'straight' and piece.get_edges()[3].get_type() == 'straight':
-                # Top left
-                min_x, min_y = 0, 0
-                max_x = piece_img.shape[0]
-                max_y = piece_img.shape[1]
-
-            elif piece.get_edges()[0].get_type() == 'straight' and piece.get_edges()[1].get_type() == 'straight':
-                # Bottom left
-                min_x = (self.height_puzzle_piece * self.rows) - piece_img.shape[0]
-                max_x = self.height_puzzle_piece * self.columns
-                min_y = 0
-                max_y = piece_img.shape[1]
-            elif piece.get_edges()[1].get_type() == 'straight' and piece.get_edges()[2].get_type() == 'straight':
-                # Bottom right
-                min_x = (self.height_puzzle_piece * self.rows) - piece_img.shape[0]
-                max_x = self.height_puzzle_piece * self.columns
-                min_y = (self.width_puzzle_piece * self.columns) - piece_img.shape[1]
-                max_y = self.width_puzzle_piece * self.rows
-            elif piece.get_edges()[2].get_type() == 'straight' and piece.get_edges()[3].get_type() == 'straight':
-                # Top right
-                min_x = 0
-                max_x = piece_img.shape[0]
-                min_y = (self.width_puzzle_piece * self.columns) - piece_img.shape[1]
-                max_y = self.width_puzzle_piece * self.rows
-            if max_x != 0:
-                self.solved_image[min_x:max_x, min_y:max_y, :] = piece_img
-            self.show(self.solved_image)
+        self.show(identify_and_place_corners(self.puzzle_pieces, (self.height_puzzle_piece, self.width_puzzle_piece), (self.rows, self.columns, 3)))
 
     def show(self, img=None):
         if img is None:
