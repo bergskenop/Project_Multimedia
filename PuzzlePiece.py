@@ -1,7 +1,6 @@
 from Edge import *
 import cv2
 
-
 class PuzzlePiece:
     def __init__(self, points, corners):
         self.piece = None
@@ -16,17 +15,14 @@ class PuzzlePiece:
         return self.piece
 
     def set_edges(self, width, height, image):
-        first_corner = self.corners[0]
-        for i in range(1, len(self.corners)):
-            self.edges.append(Edge((self.corners[i - 1], self.corners[i])))
-        self.edges.append(Edge((self.corners[len(self.corners) - 1], first_corner)))
+        for i in range(3):
+            eerste_index = self.points.index(self.corners[i])
+            laatste_index = self.points.index(self.corners[i+1])
+            self.edges.append(Edge((self.corners[i], self.corners[i+1]), self.points[eerste_index:laatste_index+1]))
+        punten_laatste_rand = (self.points[self.points.index(self.corners[3]):] +
+                               self.points[:self.points.index(self.corners[0])+1])
+        self.edges.append(Edge((self.corners[3], self.corners[0]), punten_laatste_rand))
 
-        for i in range(0, len(self.edges) - 1):
-            self.edges[i].set_points(self.points[self.points.index(self.edges[i].hoeken[0]):
-                                                 self.points.index(self.edges[i].hoeken[1])+1])
-        rij = self.points[self.points.index(self.edges[3].hoeken[0]):]
-        rij = rij + self.points[:self.points.index(self.edges[3].hoeken[1])+1]
-        self.edges[3].set_points(rij)
         for i, edge in enumerate(self.edges):
             edge.set_type(i, width, height)
             edge.calculate_histogram(image)

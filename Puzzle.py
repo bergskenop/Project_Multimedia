@@ -17,7 +17,6 @@ from helper import *
 class Puzzle:
     def __init__(self, image_path):
         self.puzzle_pieces = []  # Bevat een lijst van verschillende puzzelstukken
-        self.contour_draw = None  # Bevat lijst van contouren, gebruik om puzzelstuk te omlijnen
         self.contour_draw_fully = None  # Bevat alle punten van een rand
         self.image_path = image_path  # Self expl
         self.image = cv2.imread(image_path)  # Self expl
@@ -49,48 +48,41 @@ class Puzzle:
         self.columns = kolommen
         self.size = self.rows * self.columns
 
-    # contour_draw bevat de nodige punten om de contour te tekenen, contour_draw_fully bevat alle punten van de contours
     def set_contour_draw(self):
         img_gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
         ret, thresh = cv2.threshold(img_gray, 0, 254, 0)
-        contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         contours2, hierarchy2 = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
-        contours = sorted(contours, key=cv2.contourArea, reverse=True)
         contours2 = sorted(contours2, key=cv2.contourArea, reverse=True)
-        self.contour_draw = contours[:self.rows * self.columns]
         self.contour_draw_fully = contours2[:self.rows * self.columns]
 
     def set_puzzle_pieces(self, comment=False):
-        for piece_n, contours in enumerate(self.contour_draw):
-            contour = np.squeeze(contours)
-            contour = np.vstack([contour, [10, 10]])
-            distances = np.linalg.norm(np.diff(contour, axis=0), axis=1)
-            # Later min distance robuuster maken?
-            contour = np.squeeze(np.array([contour[i] for i in np.where(distances > 7)]))
-
-            unique_elements, counts = np.unique(contour[:, 0], return_counts=True)
-            elements_to_remove = unique_elements[counts == 1]
-            indexes = []
-            for i in elements_to_remove:
-                indexes.append(np.squeeze(np.where(contour[:, 0] == i)))
-            contour = np.delete(contour, indexes, axis=0)
-
-            unique_elements, counts = np.unique(contour[:, 1], return_counts=True)
-            elements_to_remove = unique_elements[counts == 1]
-            indexes2 = []
-            for i in elements_to_remove:
-                indexes2.append(np.where(contour[:, 1] == i))
-            contour = np.delete(contour, indexes2, axis=0)
-
-            corners = []
-            for i in range(4):
-                corners.append((contour[i][0], contour[i][1]))
-            contours_fully = np.squeeze(self.contour_draw_fully[piece_n])
-            list_contours = list(zip(contours_fully[:, 0], contours_fully[:, 1]))
+        for contour in self.contour_draw_fully:
+            contour = np.squeeze(contour)
+            teller = 0
+            number_found = 0
+            correct_x = []
+            correct_y = []
+            while teller < contour.shape[0] and number_found < 4:
+                value_to_count_x = contour[teller][0]
+                value_to_count_y = contour[teller][1]
+                if (len(correct_y) < 2 and value_to_count_y not in correct_y
+                        and np.count_nonzero(contour[:, 1] == value_to_count_y) > 35):
+                    correct_y.append(value_to_count_y)
+                    number_found += 1
+                if (len(correct_x) < 2 and value_to_count_x not in correct_x
+                        and np.count_nonzero(contour[:, 0] == value_to_count_x) > 35):
+                    correct_x.append(value_to_count_x)
+                    number_found += 1
+                teller += 1
+            # Hoeken toevoegen van linksboven en zo tegen de klok in
+            corners = [(correct_x[0], correct_y[0]), (correct_x[0], correct_y[1]), (correct_x[1], correct_y[1]),
+                       (correct_x[1], correct_y[0])]
+            list_contours = list(zip(contour[:, 0], contour[:, 1]))
 
             puzzle_piece = PuzzlePiece(list_contours, corners)
-            puzzle_piece.set_edges(abs(corners[1][0] - corners[2][0]),
-                                   abs(corners[0][1] - corners[1][1]), self.image.copy())
+            w = abs(corners[1][0] - corners[2][0])
+            h = abs(corners[0][1] - corners[1][1])
+            puzzle_piece.set_edges(w, h, self.image.copy())
             self.puzzle_pieces.append(puzzle_piece)
 
             # Elke puzzlepiece wordt een cutout van de originele afbeelding meegegeven.
@@ -105,8 +97,8 @@ class Puzzle:
             max_y = max(points, key=lambda x: x[1])[1]
 
             puzzle_piece.set_piece(self.image[min_y:max_y, min_x:max_x, :])
-            # puzzle_piece.show_puzzlepiece()
-            # puzzle_piece.print_puzzlepiece() # information about individual puzzlepiece
+            # puzzle_piece.show_puzzlepiece()  # show seperate images for each piece
+            # puzzle_piece.print_puzzlepiece()  # information about individual puzzlepiece
 
     def set_correct_puzzlepiece_size(self):
         self.height_puzzle_piece = abs(self.puzzle_pieces[0].corners[0][1] - self.puzzle_pieces[0].corners[1][1])
@@ -125,8 +117,7 @@ class Puzzle:
 
     def draw_contours(self):
         img_contours = np.zeros_like(self.image)
-        # img_contours = self.image.copy()
-        cv2.drawContours(img_contours, self.contour_draw, -1, (0, 255, 0), 1)
+        cv2.drawContours(img_contours, self.contour_draw_fully, -1, (0, 255, 0), 1)
         self.show(img_contours)
 
     def draw_corners(self):
@@ -134,4 +125,4 @@ class Puzzle:
         for piece in self.puzzle_pieces:
             for corner in piece.corners:
                 cv2.circle(img_corners, corner, 3, (0, 255, 255), -1)
-            self.show(img_corners)
+        self.show(img_corners)

@@ -73,6 +73,9 @@ class Edge:
             cv2.circle(mask, point, 4, (255, 255, 255), -1)
         gray_mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
         mask_perfect = cv2.bitwise_and(image_threshold, image_threshold, mask=gray_mask)
+        # uncomment to show edges of piece one by one
+        # cv2.imshow('mask', mask_perfect)
+        # cv2.waitKey(0)
         hist = cv2.calcHist([gray_image], [0], mask_perfect, [256], [0, 256])
         hist_normalized = cv2.normalize(hist, hist, 0, 1, cv2.NORM_MINMAX)
         self.histogram = hist_normalized
