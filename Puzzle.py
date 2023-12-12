@@ -17,7 +17,7 @@ from helper import *
 class Puzzle:
     def __init__(self, image_path):
         self.puzzle_pieces = []  # Bevat een lijst van verschillende puzzelstukken
-        self.contour_draw_fully = None  # Bevat alle punten van een rand
+        self.contours = None  # Bevat alle punten van een rand
         self.image_path = image_path  # Self expl
         self.image = cv2.imread(image_path)  # Self expl
         self.type = 1  # Type puzzel; 1: shuffled; 2: scrambled; 3: rotated
@@ -42,10 +42,8 @@ class Puzzle:
             type_puzzle = 3
         self.type = type_puzzle
         scale = re.compile("[0-9][x][0-9]").findall(self.image_path)
-        rijen = int(str(re.compile("^[0-9]").findall(scale[0])[0]))
-        self.rows = rijen
-        kolommen = int(str(re.compile("[0-9]$").findall(scale[0])[0]))
-        self.columns = kolommen
+        self.rows = int(str(re.compile("^[0-9]").findall(scale[0])[0]))
+        self.columns = int(str(re.compile("[0-9]$").findall(scale[0])[0]))
         self.size = self.rows * self.columns
 
     def set_contour_draw(self):
@@ -53,36 +51,30 @@ class Puzzle:
         ret, thresh = cv2.threshold(img_gray, 0, 254, 0)
         contours2, hierarchy2 = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
         contours2 = sorted(contours2, key=cv2.contourArea, reverse=True)
-        self.contour_draw_fully = contours2[:self.rows * self.columns]
+        self.contours = contours2[:self.size]
 
     def set_puzzle_pieces(self, comment=False):
-        for contour in self.contour_draw_fully:
+        for n, contour in enumerate(self.contours):
+            contour_img = np.zeros_like(self.image)
+            cv2.drawContours(contour_img, self.contours, n, (255, 255, 255), thickness=cv2.FILLED)
+            thresh = cv2.cvtColor(contour_img, cv2.COLOR_BGR2GRAY)
+            # qual=0.1, minDist=10, blocksize=7, k=0.21 => alles shuffled/rotated behalve 3 puzzels => 5x5 01, 03 en 06
+            # Werkt nog niet goed voor scrambled puzzelstukken
+            corners = cv2.goodFeaturesToTrack(thresh, maxCorners=4, qualityLevel=0.1, minDistance=10,
+                                              blockSize=7, useHarrisDetector=True, k=0.21)
+            corners = np.int32(corners)
+            temp_corners = []
+            for c in corners:
+                x, y = c.ravel()
+                temp_corners.append((x, y))
+            corners_in_correct_order = []
+            volgorde = [3, 1, 0, 2]
+            for v in volgorde:
+                corners_in_correct_order.append(temp_corners[v])
             contour = np.squeeze(contour)
-            teller = 0
-            number_found = 0
-            correct_x = []
-            correct_y = []
-            while teller < contour.shape[0] and number_found < 4:
-                value_to_count_x = contour[teller][0]
-                value_to_count_y = contour[teller][1]
-                if (len(correct_y) < 2 and value_to_count_y not in correct_y
-                        and np.count_nonzero(contour[:, 1] == value_to_count_y) > 35):
-                    correct_y.append(value_to_count_y)
-                    number_found += 1
-                if (len(correct_x) < 2 and value_to_count_x not in correct_x
-                        and np.count_nonzero(contour[:, 0] == value_to_count_x) > 35):
-                    correct_x.append(value_to_count_x)
-                    number_found += 1
-                teller += 1
-            # Hoeken toevoegen van linksboven en zo tegen de klok in
-            corners = [(correct_x[0], correct_y[0]), (correct_x[0], correct_y[1]), (correct_x[1], correct_y[1]),
-                       (correct_x[1], correct_y[0])]
             list_contours = list(zip(contour[:, 0], contour[:, 1]))
-
-            puzzle_piece = PuzzlePiece(list_contours, corners)
-            w = abs(corners[1][0] - corners[2][0])
-            h = abs(corners[0][1] - corners[1][1])
-            puzzle_piece.set_edges(w, h, self.image.copy())
+            puzzle_piece = PuzzlePiece(list_contours)
+            puzzle_piece.set_edges_and_corners(self.image.copy(), corners_in_correct_order)
             self.puzzle_pieces.append(puzzle_piece)
 
             # Elke puzzlepiece wordt een cutout van de originele afbeelding meegegeven.
@@ -117,7 +109,7 @@ class Puzzle:
 
     def draw_contours(self):
         img_contours = np.zeros_like(self.image)
-        cv2.drawContours(img_contours, self.contour_draw_fully, -1, (0, 255, 0), 1)
+        cv2.drawContours(img_contours, self.contours, -1, (0, 255, 0), 1)
         self.show(img_contours)
 
     def draw_corners(self):

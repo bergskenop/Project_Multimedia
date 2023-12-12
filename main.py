@@ -4,15 +4,16 @@ from Puzzle import Puzzle
 
 
 def main():
-    # path = filedialog.askopenfilename(initialdir="*/", title="Select image",
-    #                                   filetypes=(("Images", "*.png*"), ("all files", "*.*")))
-    p = Puzzle('data/Jigsaw_shuffled/jigsaw_shuffled_2x2_00.png')
+    path = filedialog.askopenfilename(initialdir="*/", title="Select image",
+                                      filetypes=(("Images", "*.png*"), ("all files", "*.*")))
+    # path = 'data/Jigsaw_shuffled/jigsaw_shuffled_2x2_00.png'
+    p = Puzzle(path)
     p.initialise_puzzle()
-    p.show()
-    # p.draw_contours()
-    # # p.draw_corners()
-    p.type_based_matching()
-    p.show(p.solved_image)
+    # p.show()
+    p.draw_contours()
+    p.draw_corners()
+    # p.type_based_matching()
+    # p.show(p.solved_image)
     # process_all("data/Jigsaw_shuffled")
 
 
