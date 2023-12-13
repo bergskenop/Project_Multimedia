@@ -132,4 +132,4 @@ class Puzzle:
         for piece in self.puzzle_pieces:
             for corner in piece.corners:
                 cv2.circle(img_corners, corner, 3, (0, 255, 255), -1)
-                self.show(img_corners)
+        self.show(img_corners)

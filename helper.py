@@ -51,8 +51,6 @@ def match(pieces, puzzle_dim):
     # Begin puzzelstuk zoeken door het eerste puzzelstuk met 2 rechte lijnen te vinden en dit te draaien tot het
     # hoekpunt linksboven is zodat w esteeds van daaruit vertrekken bij het matchen van puzzelstukken
     i = 0
-    cv2.imshow('first piece', pieces[0].get_piece())
-    cv2.waitKey(0)
     corner_found = False
     while not corner_found:
         aantal_rechte_lijnen = 0
@@ -63,13 +61,11 @@ def match(pieces, puzzle_dim):
         if aantal_rechte_lijnen == 2:
             # draaien tot de twee rechte lijnen links en boven zitten zodat de hoek linksboven is
             while (not pieces[i].get_edges()[0].get_type() == 'straight'
-                   and not pieces[i].get_edges()[3].get_type() == 'straight'):
+                   or not pieces[i].get_edges()[3].get_type() == 'straight'):
                 pieces[i].rotate(90)
             corner_found = True
         else:
             i += 1
-    cv2.imshow('t', pieces[i].get_piece())
-    cv2.waitKey(0)
     # i heeft de index van het beginpuzzelstuk
     pieces_copy = pieces
     pieces_solved = [pieces[i]]
@@ -88,15 +84,18 @@ def match(pieces, puzzle_dim):
             type_of_edge_to_match = pieces_solved[number].get_edges()[2].get_type().lower()
             lengte_of_edge_to_match = pieces_solved[number].get_edges()[2].get_lengte()
             hist_of_edge_to_match = pieces_solved[number].get_edges()[2].get_histogram()
-        best_piece = pieces_copy[0]
-        best_piece_edge_number = 0
-        best_match_value = 1000000
+        best_piece = None
+        best_piece_edge_number = None
+        best_match_value = 10000
         for piece in pieces_copy:
             for n, edge in enumerate(piece.get_edges()):
                 if ((edge.get_lengte() + 5 > lengte_of_edge_to_match > edge.get_lengte() - 5) and
                         ((edge.get_type() == 'innie' and type_of_edge_to_match == 'outie') or
                          (edge.get_type() == 'outie' and type_of_edge_to_match == 'innie'))):
+                    # cv2.imshow('t', piece.get_piece())
+                    # cv2.waitKey(0)
                     value = cv2.compareHist(hist_of_edge_to_match, edge.get_histogram(), method=1)
+                    print(value)
                     if best_match_value == 1000000 or best_match_value > value:
                         best_match_value = value
                         best_piece = piece
