@@ -4,11 +4,12 @@ import matplotlib.pyplot as plt
 
 
 class Edge:
-    def __init__(self, hoeken, points=None):
+    def __init__(self, hoeken, points, lengte):
         self.edge_points = points  # Alle punten van de rand => eventueel verwijderen later
         self.type = None  # Straight, innie of outie
         self.hoeken = hoeken  # 2 hoekpunten van de rand (2 uitersten) => eventueel verwijderen later
         self.histogram = None  # Bevat de punten van het histogram van de zwart-wit waarden van de randen
+        self.lengte = lengte
 
     # Set_type gaat er steeds van uit dat het eerste hoekpunt zich linksboven bevind
     # edge_number variabele bepaald in welke richting de hoekpunten liggen
@@ -44,6 +45,12 @@ class Edge:
                 self.type = 'innie'
         return 0
 
+    def set_lengte(self, lengte):
+        self.lengte = lengte
+
+    def get_lengte(self):
+        return self.lengte
+
     def set_hoeken(self, hoeken):
         self.hoeken = hoeken
 
@@ -51,11 +58,14 @@ class Edge:
         # Use Linear and cubic spline to interpolate edges
         self.edge_points = points
 
-    def get_points(self):
-        return self.points
+    def get_edge_points(self):
+        return self.edge_points
 
     def get_type(self):
         return self.type
+
+    def get_histogram(self):
+        return self.histogram
 
     def print_edge(self):
         print(f'Hoeken : {self.hoeken} van het type {self.type} met {len(self.edge_points)} punten')

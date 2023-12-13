@@ -9,6 +9,8 @@ class PuzzlePiece:
         self.edges = []
         self.width = None
         self.height = None
+        self.piece_width = None
+        self.piece_height = None
 
     def get_piece(self):
         return self.piece
@@ -19,6 +21,12 @@ class PuzzlePiece:
     def get_height(self):
         return self.height
 
+    def get_piece_width(self):
+        return self.piece_width
+
+    def get_piece_height(self):
+        return self.piece_height
+
     def get_edges(self):
         return self.edges
 
@@ -28,6 +36,10 @@ class PuzzlePiece:
     def set_width_and_height(self, width, height):
         self.width = width
         self.height = height
+
+    def set_piece_width_and_height(self, width, height):
+        self.piece_width = width
+        self.piece_height = height
 
     def set_piece(self, image):
         self.piece = image
@@ -46,10 +58,17 @@ class PuzzlePiece:
         for i in range(3):
             eerste_index = self.points.index(self.corners[i])
             laatste_index = self.points.index(self.corners[i+1])
-            self.edges.append(Edge((self.corners[i], self.corners[i+1]), self.points[eerste_index:laatste_index+1]))
+            if i % 2 == 0:
+                lengte = np.abs(self.corners[i][1] - self.corners[i+1][1])
+            else:
+                lengte = np.abs(self.corners[i][0] - self.corners[i+1][0])
+            self.edges.append(Edge((self.corners[i], self.corners[i+1]),
+                                   self.points[eerste_index:laatste_index+1], lengte))
         punten_laatste_rand = (self.points[self.points.index(self.corners[3]):] +
                                self.points[:self.points.index(self.corners[0])+1])
-        self.edges.append(Edge((self.corners[3], self.corners[0]), punten_laatste_rand))
+        lengte = np.abs(self.corners[3][0] - self.corners[0][0])
+        self.edges.append(Edge((self.corners[3], self.corners[0]), punten_laatste_rand,
+                               lengte))
 
         width = abs(self.corners[1][0] - self.corners[2][0])
         height = abs(self.corners[0][1] - self.corners[1][1])
@@ -59,6 +78,7 @@ class PuzzlePiece:
             # edge.print_edge()
 
     def rotate(self, angle):
+        print("hhhh")
         return 0
 
     def show_puzzlepiece(self):

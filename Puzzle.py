@@ -99,6 +99,7 @@ class Puzzle:
             max_y = max(points, key=lambda x: x[1])[1]
 
             puzzle_piece.set_piece(self.image[min_y:max_y, min_x:max_x, :])
+            puzzle_piece.set_piece_width_and_height(np.abs(min_x - max_x), np.abs(min_y - max_y))
             puzzle_piece.show_puzzlepiece()  # show seperate images for each piece
             # puzzle_piece.print_puzzlepiece()  # information about individual puzzlepiece
 
@@ -110,6 +111,9 @@ class Puzzle:
     #     self.show(match(self.puzzle_pieces,
     #                                          (self.height_puzzle_piece, self.width_puzzle_piece),
     #                                          (self.rows, self.columns, 3)))
+
+    def match(self):
+        match(self.puzzle_pieces, (self.rows, self.columns, 3))
 
     def show(self, img=None):
         if img is None:
