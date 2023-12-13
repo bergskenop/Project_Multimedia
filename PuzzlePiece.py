@@ -1,5 +1,8 @@
+import imutils
+
 from Edge import *
 import cv2
+
 
 class PuzzlePiece:
     def __init__(self, points):
@@ -57,15 +60,15 @@ class PuzzlePiece:
 
         for i in range(3):
             eerste_index = self.points.index(self.corners[i])
-            laatste_index = self.points.index(self.corners[i+1])
+            laatste_index = self.points.index(self.corners[i + 1])
             if i % 2 == 0:
-                lengte = np.abs(self.corners[i][1] - self.corners[i+1][1])
+                lengte = np.abs(self.corners[i][1] - self.corners[i + 1][1])
             else:
-                lengte = np.abs(self.corners[i][0] - self.corners[i+1][0])
-            self.edges.append(Edge((self.corners[i], self.corners[i+1]),
-                                   self.points[eerste_index:laatste_index+1], lengte))
+                lengte = np.abs(self.corners[i][0] - self.corners[i + 1][0])
+            self.edges.append(Edge((self.corners[i], self.corners[i + 1]),
+                                   self.points[eerste_index:laatste_index + 1], lengte))
         punten_laatste_rand = (self.points[self.points.index(self.corners[3]):] +
-                               self.points[:self.points.index(self.corners[0])+1])
+                               self.points[:self.points.index(self.corners[0]) + 1])
         lengte = np.abs(self.corners[3][0] - self.corners[0][0])
         self.edges.append(Edge((self.corners[3], self.corners[0]), punten_laatste_rand,
                                lengte))
@@ -78,8 +81,13 @@ class PuzzlePiece:
             # edge.print_edge()
 
     def rotate(self, angle):
-        print("hhhh")
-        return 0
+        self.piece = imutils.rotate_bound(self.piece, angle)
+        multiples = angle // 90
+        for i in range(0, multiples):
+            self.edges = self.edges[1:] + self.edges[:1]
+            self.piece_width, self.piece_height = self.piece_height, self.piece_width
+            self.width, self.height = self.height, self.width
+        return self
 
     def show_puzzlepiece(self):
         if self.piece is not None:

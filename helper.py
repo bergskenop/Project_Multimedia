@@ -71,14 +71,14 @@ def match(pieces, puzzle_dim):
     pieces_solved = [pieces[i]]
     pieces_copy.remove(pieces[i])
     # Bereken de grootte van de opgeloste image op basis van het eerste puzzelstuk
-    solved_image = np.zeros([pieces[i].get_height * rows, pieces[i].get_width() * columns, 3], dtype=np.uint8)
+    solved_image = np.zeros([pieces[i].get_height() * rows, pieces[i].get_width() * columns, 3], dtype=np.uint8)
 
     for number in range(rows * columns - 1):
         newLine = False
         if pieces_solved[number].get_edges()[2].get_type().lower() == 'straight':
             type_of_edge_to_match = pieces_solved[len(pieces_solved) - columns].get_edges()[1].get_type()
             hist_of_edge_to_match = pieces_solved[len(pieces_solved) - columns].get_edges()[1].get_histogram()
-            lengte_of_edge_to_match = pieces_solved[len(pieces_solved) - columns].get_edges().get_lengte()
+            lengte_of_edge_to_match = pieces_solved[len(pieces_solved) - columns].get_edges()[1].get_lengte()
             newLine = True
         else:
             type_of_edge_to_match = pieces_solved[number].get_edges()[2].get_type().lower()
@@ -89,7 +89,7 @@ def match(pieces, puzzle_dim):
         best_match_value = 1000000
         for piece in pieces_copy:
             for n, edge in enumerate(piece.get_edges()):
-                if ((edge.get_lengte() + 5 > lengte_of_edge_to_match > edge.get_lengte - 5) and
+                if ((edge.get_lengte() + 5 > lengte_of_edge_to_match > edge.get_lengte() - 5) and
                         ((edge.get_type() == 'innie' and type_of_edge_to_match == 'outie') or
                          (edge.get_type() == 'outie' and type_of_edge_to_match == 'innie'))):
                     value = cv2.compareHist(hist_of_edge_to_match, edge.get_histogram(), method=1)
@@ -98,16 +98,16 @@ def match(pieces, puzzle_dim):
                         best_piece = piece
                         best_piece_edge_number = n
         # de index van de rand geeft aan hoeveel graden het puzzelstuk gedraaid moet worden.
-        best_piece_copy = best_piece.copy()
+        best_piece_copy = best_piece
         if not newLine:
             pieces_solved.append(best_piece_copy.rotate(best_piece_edge_number * 90))
         else:
-            pieces_solved.append(best_piece_copy.rotate(3 - best_piece_edge_number) * 90)
+            pieces_solved.append(best_piece_copy.rotate((3 - best_piece_edge_number) * 90))
         pieces_copy.remove(best_piece)
 
-        for piece in pieces_solved:
-            cv2.imshow("piece", piece.get_piece())
-            cv2.waitKey(0)
+    for piece in pieces_solved:
+        cv2.imshow("piece", piece.get_piece())
+        cv2.waitKey(0)
 
         # min_x = 0
         # min_y = 0
