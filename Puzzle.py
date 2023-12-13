@@ -31,7 +31,10 @@ class Puzzle:
     def initialise_puzzle(self):
         self.set_puzzle_parameters()  # Parameterbepaling uit filename
         self.set_contour_draw()  # Contour detectie van puzzelstukken
-        self.set_puzzle_pieces()  # Individuele puzzelstukken declareren: elk eigen contour en hoekpunten
+        if self.type != 2:
+            self.set_puzzle_pieces_non_scrambled()  # Individuele puzzelstukken declareren: elk eigen contour en hoekpunten
+        else:
+            self.set_puzzle_pieces_scrambled()
         self.set_correct_puzzlepiece_size()  # Grootte van puzzelstukken bepalen (uniforme verdeling)
 
     def set_puzzle_parameters(self):
@@ -53,14 +56,20 @@ class Puzzle:
         contours2 = sorted(contours2, key=cv2.contourArea, reverse=True)
         self.contours = contours2[:self.size]
 
-    def set_puzzle_pieces(self, comment=False):
+    def set_puzzle_pieces_non_scrambled(self, comment=False):
         for n, contour in enumerate(self.contours):
             contour_img = np.zeros_like(self.image)
             cv2.drawContours(contour_img, self.contours, n, (255, 255, 255), thickness=cv2.FILLED)
-            thresh = cv2.cvtColor(contour_img, cv2.COLOR_BGR2GRAY)
+            gray = cv2.cvtColor(contour_img, cv2.COLOR_BGR2GRAY)
             # qual=0.1, minDist=10, blocksize=7, k=0.21 => alles shuffled/rotated behalve 3 puzzels => 5x5 01, 03 en 06
             # Werkt nog niet goed voor scrambled puzzelstukken
-            corners = cv2.goodFeaturesToTrack(thresh, maxCorners=4, qualityLevel=0.1, minDistance=10,
+
+            kernel = np.ones((3, 3), np.uint8)
+            dilate = cv2.dilate(gray, kernel, iterations=1)
+            erosion = cv2.erode(gray, kernel, iterations=1)
+            cnt = cv2.bitwise_xor(erosion, dilate, mask=None)
+
+            corners = cv2.goodFeaturesToTrack(cnt, maxCorners=4, qualityLevel=0.1, minDistance=10,
                                               blockSize=7, useHarrisDetector=True, k=0.21)
             corners = np.int32(corners)
             temp_corners = []
@@ -89,8 +98,11 @@ class Puzzle:
             max_y = max(points, key=lambda x: x[1])[1]
 
             puzzle_piece.set_piece(self.image[min_y:max_y, min_x:max_x, :])
-            # puzzle_piece.show_puzzlepiece()  # show seperate images for each piece
+            puzzle_piece.show_puzzlepiece()  # show seperate images for each piece
             # puzzle_piece.print_puzzlepiece()  # information about individual puzzlepiece
+
+    def set_puzzle_pieces_scrambled(self):
+        return 0
 
     def set_correct_puzzlepiece_size(self):
         self.height_puzzle_piece = abs(self.puzzle_pieces[0].corners[0][1] - self.puzzle_pieces[0].corners[1][1])
@@ -98,7 +110,9 @@ class Puzzle:
 
     def type_based_matching(self):
         # Shuffled 2x2 solver
-        self.show(identify_and_place_corners(self.puzzle_pieces, (self.height_puzzle_piece, self.width_puzzle_piece), (self.rows, self.columns, 3)))
+        self.show(identify_and_place_corners(self.puzzle_pieces,
+                                             (self.height_puzzle_piece, self.width_puzzle_piece),
+                                             (self.rows, self.columns, 3)))
 
     def show(self, img=None):
         if img is None:
@@ -117,4 +131,4 @@ class Puzzle:
         for piece in self.puzzle_pieces:
             for corner in piece.corners:
                 cv2.circle(img_corners, corner, 3, (0, 255, 255), -1)
-        self.show(img_corners)
+                self.show(img_corners)
