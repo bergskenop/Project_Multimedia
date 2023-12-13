@@ -4,8 +4,8 @@ import cv2
 class PuzzlePiece:
     def __init__(self, points):
         self.piece = None
-        self.points = points
-        self.corners = []
+        self.points = points  # later wegdoen?
+        self.corners = []  # later wegdoen?
         self.edges = []
         self.width = None
         self.height = None
@@ -15,6 +15,12 @@ class PuzzlePiece:
 
     def get_piece(self):
         return self.piece
+
+    def get_width(self):
+        return self.width
+
+    def get_height(self):
+        return self.height
 
     def set_width_and_height(self, width, height):
         self.width = width

@@ -5,9 +5,9 @@ import matplotlib.pyplot as plt
 
 class Edge:
     def __init__(self, hoeken, points=None):
-        self.edge_points = points  # Alle punten van de rand
+        self.edge_points = points  # Alle punten van de rand => eventueel verwijderen later
         self.type = None  # Straight, innie of outie
-        self.hoeken = hoeken  # 2 hoekpunten van de rand (2 uitersten)
+        self.hoeken = hoeken  # 2 hoekpunten van de rand (2 uitersten) => eventueel verwijderen later
         self.histogram = None  # Bevat de punten van het histogram van de zwart-wit waarden van de randen
 
     # Set_type gaat er steeds van uit dat het eerste hoekpunt zich linksboven bevind
