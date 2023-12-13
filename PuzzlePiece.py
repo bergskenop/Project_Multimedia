@@ -10,9 +10,6 @@ class PuzzlePiece:
         self.width = None
         self.height = None
 
-    def set_piece(self, image):
-        self.piece = image
-
     def get_piece(self):
         return self.piece
 
@@ -22,9 +19,18 @@ class PuzzlePiece:
     def get_height(self):
         return self.height
 
+    def get_edges(self):
+        return self.edges
+
+    def get_points(self):
+        return self.points
+
     def set_width_and_height(self, width, height):
         self.width = width
         self.height = height
+
+    def set_piece(self, image):
+        self.piece = image
 
     def set_edges_and_corners(self, image, corners):
         # Hier corners instellen omdat de punten die Harris corner detection vindt niet altijd in de contour liggen,
@@ -52,11 +58,8 @@ class PuzzlePiece:
             edge.calculate_histogram(image)
             # edge.print_edge()
 
-    def get_edges(self):
-        return self.edges
-
-    def get_points(self):
-        return self.points
+    def rotate(self, angle):
+        return 0
 
     def show_puzzlepiece(self):
         if self.piece is not None:
