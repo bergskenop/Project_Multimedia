@@ -42,3 +42,22 @@ def identify_and_place_corners(pieces, piece_dim, puzzle_dim):
             # solved_image=solved_image
     return solved_image
 
+def match(pieces, piece_dim, puzzle_dim):
+    height_puzzle_piece, width_puzzle_piece = piece_dim
+    rows, columns, _ = puzzle_dim
+    solved_image = np.zeros([height_puzzle_piece * rows, width_puzzle_piece * columns, 3], dtype=np.uint8)
+    # Begin puzzelstuk zoeken door het eerste puzzelstuk met 2 rechte lijnen te vinden en dit te draaien tot het
+    # hoekpunt linksboven is zodat w esteeds van daaruit vertrekken bij het matchen van puzzelstukken
+    i = 0
+    corner_found = False
+    while not corner_found:
+        aantal_rechte_lijnen = 0
+        for edge in pieces[i].get_edges():
+            if edge.get_type() == 'straight':
+                aantal_rechte_lijnen += 1
+        if aantal_rechte_lijnen == 2:
+            while not pieces[i].get_edges()[0].get_type() == 'straight' and not pieces[i].get_edges()[3].get_type() == 'straight':
+                pieces[i]
+
+
+

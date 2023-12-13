@@ -24,8 +24,6 @@ class Puzzle:
         self.rows = 1  # Self expl
         self.columns = 1  # Self expl
         self.size = 1  # Hoeveelheid puzzelstukken rows*columns
-        self.width_puzzle_piece = None  # Breedte van puzzelstukken
-        self.height_puzzle_piece = None  # Hoogte van puzzelstukken
         self.solved_image = None  # Uiteindelijk resultaat komt hier terecht
 
     def initialise_puzzle(self):
@@ -35,7 +33,6 @@ class Puzzle:
             self.set_puzzle_pieces_non_scrambled()  # Individuele puzzelstukken declareren: elk eigen contour en hoekpunten
         else:
             self.set_puzzle_pieces_scrambled()
-        self.set_correct_puzzlepiece_size()  # Grootte van puzzelstukken bepalen (uniforme verdeling)
 
     def set_puzzle_parameters(self):
         type_puzzle = 1
@@ -84,6 +81,11 @@ class Puzzle:
             list_contours = list(zip(contour[:, 0], contour[:, 1]))
             puzzle_piece = PuzzlePiece(list_contours)
             puzzle_piece.set_edges_and_corners(self.image.copy(), corners_in_correct_order)
+
+            height_puzzle_piece = abs(corners_in_correct_order[0][1] - corners_in_correct_order[1][1])
+            width_puzzle_piece = abs(corners_in_correct_order[1][0] - corners_in_correct_order[2][0])
+
+            puzzle_piece.set_width_and_height(width_puzzle_piece, height_puzzle_piece)
             self.puzzle_pieces.append(puzzle_piece)
 
             # Elke puzzlepiece wordt een cutout van de originele afbeelding meegegeven.
@@ -104,15 +106,11 @@ class Puzzle:
     def set_puzzle_pieces_scrambled(self):
         return 0
 
-    def set_correct_puzzlepiece_size(self):
-        self.height_puzzle_piece = abs(self.puzzle_pieces[0].corners[0][1] - self.puzzle_pieces[0].corners[1][1])
-        self.width_puzzle_piece = abs(self.puzzle_pieces[0].corners[1][0] - self.puzzle_pieces[0].corners[2][0])
-
-    def type_based_matching(self):
-        # Shuffled 2x2 solver
-        self.show(identify_and_place_corners(self.puzzle_pieces,
-                                             (self.height_puzzle_piece, self.width_puzzle_piece),
-                                             (self.rows, self.columns, 3)))
+    # def type_based_matching(self):
+    #     # Shuffled 2x2 solver
+    #     self.show(match(self.puzzle_pieces,
+    #                                          (self.height_puzzle_piece, self.width_puzzle_piece),
+    #                                          (self.rows, self.columns, 3)))
 
     def show(self, img=None):
         if img is None:

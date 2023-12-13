@@ -7,12 +7,18 @@ class PuzzlePiece:
         self.points = points
         self.corners = []
         self.edges = []
+        self.width = None
+        self.height = None
 
     def set_piece(self, image):
         self.piece = image
 
     def get_piece(self):
         return self.piece
+
+    def set_width_and_height(self, width, height):
+        self.width = width
+        self.height = height
 
     def set_edges_and_corners(self, image, corners):
         # Hier corners instellen omdat de punten die Harris corner detection vindt niet altijd in de contour liggen,
