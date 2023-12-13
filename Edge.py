@@ -16,28 +16,28 @@ class Edge:
     # (kan ook zonder door hoeken variabele te analyseren)
     def set_type(self, edge_number, width, height):
         if edge_number == 0:
-            if len(self.edge_points) <= height+(height//50):
+            if np.all([self.hoeken[0][0]-3 < x < self.hoeken[0][0]+3 for x, y in self.edge_points]):
                 self.type = 'straight'
             elif np.any([x < self.hoeken[0][0]-3 for x, y in self.edge_points]):
                 self.type = 'outie'
             else:
                 self.type = 'innie'
         elif edge_number == 1:
-            if len(self.edge_points) <= width+(width//50):
+            if np.all([self.hoeken[0][1]-3 < y < self.hoeken[0][1]+3 for x, y in self.edge_points]):
                 self.type = 'straight'
             elif np.any([y > self.hoeken[1][1]+3 for x, y in self.edge_points]):
                 self.type = 'outie'
             else:
                 self.type = 'innie'
         elif edge_number == 2:
-            if len(self.edge_points) <= height+(height//50):
+            if np.all([self.hoeken[0][0]-3 < x < self.hoeken[0][0]+3 for x, y in self.edge_points]):
                 self.type = 'straight'
             elif np.any([x < self.hoeken[0][0]-3 for x, y in self.edge_points]):
                 self.type = 'innie'
             else:
                 self.type = 'outie'
         else:
-            if len(self.edge_points) <= width+(width//50):
+            if np.all([self.hoeken[0][1]-3 < y < self.hoeken[0][1]+3 for x, y in self.edge_points]):
                 self.type = 'straight'
             elif np.any([y < self.hoeken[1][1]-3 for x, y in self.edge_points]):
                 self.type = 'outie'
