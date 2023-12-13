@@ -28,11 +28,10 @@ class Puzzle:
 
     def initialise_puzzle(self):
         self.set_puzzle_parameters()  # Parameterbepaling uit filename
+        if self.type == 2:
+            self.scrambled2rotated()
         self.set_contour_draw()  # Contour detectie van puzzelstukken
-        if self.type != 2:
-            self.set_puzzle_pieces_non_scrambled()  # Individuele puzzelstukken declareren: elk eigen contour en hoekpunten
-        else:
-            self.set_puzzle_pieces_scrambled()
+        self.set_puzzle_pieces()
 
     def set_puzzle_parameters(self):
         type_puzzle = 1
@@ -53,7 +52,7 @@ class Puzzle:
         contours2 = sorted(contours2, key=cv2.contourArea, reverse=True)
         self.contours = contours2[:self.size]
 
-    def set_puzzle_pieces_non_scrambled(self, comment=False):
+    def set_puzzle_pieces(self, comment=False):
         for n, contour in enumerate(self.contours):
             contour_img = np.zeros_like(self.image)
             cv2.drawContours(contour_img, self.contours, n, (255, 255, 255), thickness=cv2.FILLED)
@@ -103,7 +102,7 @@ class Puzzle:
             puzzle_piece.show_puzzlepiece()  # show seperate images for each piece
             # puzzle_piece.print_puzzlepiece()  # information about individual puzzlepiece
 
-    def set_puzzle_pieces_scrambled(self):
+    def scrambled2rotated(self):
         return 0
 
     # def type_based_matching(self):
