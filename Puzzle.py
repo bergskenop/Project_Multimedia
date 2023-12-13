@@ -100,7 +100,7 @@ class Puzzle:
 
             puzzle_piece.set_piece(self.image[min_y:max_y, min_x:max_x, :])
             puzzle_piece.set_piece_width_and_height(np.abs(min_x - max_x), np.abs(min_y - max_y))
-            puzzle_piece.show_puzzlepiece()  # show seperate images for each piece
+            # puzzle_piece.show_puzzlepiece()  # show seperate images for each piece
             # puzzle_piece.print_puzzlepiece()  # information about individual puzzlepiece
 
     def scrambled2rotated(self):
@@ -132,4 +132,4 @@ class Puzzle:
         for piece in self.puzzle_pieces:
             for corner in piece.corners:
                 cv2.circle(img_corners, corner, 3, (0, 255, 255), -1)
-        self.show(img_corners)
+                self.show(img_corners)

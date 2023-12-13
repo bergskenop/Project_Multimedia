@@ -11,7 +11,7 @@ def main():
     p.initialise_puzzle()
     # p.show()
     # p.draw_contours()
-    # p.draw_corners()
+    p.draw_corners()
     p.match()
     # p.type_based_matching()
     # p.show(p.solved_image)

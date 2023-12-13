@@ -51,8 +51,9 @@ def match(pieces, puzzle_dim):
     # Begin puzzelstuk zoeken door het eerste puzzelstuk met 2 rechte lijnen te vinden en dit te draaien tot het
     # hoekpunt linksboven is zodat w esteeds van daaruit vertrekken bij het matchen van puzzelstukken
     i = 0
+    cv2.imshow('first piece', pieces[0].get_piece())
+    cv2.waitKey(0)
     corner_found = False
-    print('test')
     while not corner_found:
         aantal_rechte_lijnen = 0
         for edge in pieces[i].get_edges():
@@ -65,7 +66,10 @@ def match(pieces, puzzle_dim):
                    and not pieces[i].get_edges()[3].get_type() == 'straight'):
                 pieces[i].rotate(90)
             corner_found = True
-        i += 1
+        else:
+            i += 1
+    cv2.imshow('t', pieces[i].get_piece())
+    cv2.waitKey(0)
     # i heeft de index van het beginpuzzelstuk
     pieces_copy = pieces
     pieces_solved = [pieces[i]]
@@ -100,9 +104,11 @@ def match(pieces, puzzle_dim):
         # de index van de rand geeft aan hoeveel graden het puzzelstuk gedraaid moet worden.
         best_piece_copy = best_piece
         if not newLine:
-            pieces_solved.append(best_piece_copy.rotate(best_piece_edge_number * 90))
+            best_piece_copy.rotate(best_piece_edge_number * 90)
+            pieces_solved.append(best_piece_copy)
         else:
-            pieces_solved.append(best_piece_copy.rotate((3 - best_piece_edge_number) * 90))
+            best_piece_copy.rotate((3 - best_piece_edge_number) * 90)
+            pieces_solved.append(best_piece_copy)
         pieces_copy.remove(best_piece)
 
     for piece in pieces_solved:

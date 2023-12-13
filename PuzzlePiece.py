@@ -87,7 +87,6 @@ class PuzzlePiece:
             self.edges = self.edges[1:] + self.edges[:1]
             self.piece_width, self.piece_height = self.piece_height, self.piece_width
             self.width, self.height = self.height, self.width
-        return self
 
     def show_puzzlepiece(self):
         if self.piece is not None:
