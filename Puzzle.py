@@ -124,31 +124,14 @@ class Puzzle:
             max_y = max(list_contour, key=lambda x: x[1])[1]
             temp_pieces.append(self.image[min_y-5:max_y+5, min_x-5:max_x+5, :])
 
-        for p,piece in enumerate(temp_pieces):
-            piece_gray = cv2.cvtColor(piece, cv2.COLOR_BGR2GRAY)
-            ret, piece_thresh = cv2.threshold(piece_gray, 0, 254, 0)
-            edges = cv2.Canny(piece_thresh, 50, 150, apertureSize=3)
-            for i in range(0, 90):
-                rotate = imutils.rotate_bound(edges, i)
-                img_copy = imutils.rotate_bound(piece, i)
-                lines = cv2.HoughLines(rotate, 1, np.pi/180, threshold=80)
-                lines_hv = 0
-                if lines is not None:
-                    for line in lines:
-                        rho, theta = line[0]
-                        angle = np.degrees(theta)
-                        a = np.cos(theta)
-                        b = np.sin(theta)
-                        x0 = a * rho
-                        y0 = b * rho
-                        if 0 == angle  or angle == 90:
-                            lines_hv += 1
-                            # cv2.line(img_copy, (int(x0 + 1000 * (-b)), int(y0 + 1000 * (a))),
-                            #              (int(x0 - 1000 * (-b)), int(y0 - 1000 * (a))), (0, 0, 255), 2)
-                if lines_hv == 4:
-                    temp_pieces[p] = imutils.rotate_bound(piece, i)
-                    # cv2.imshow('rotation', piece)
-                    break
+        for piece in contours:
+            piece_cpy = self.image.copy()
+            rect = cv2.minAreaRect(piece)
+            for corner in rect:
+                print(corner)
+                cv2.circle(piece_cpy, (int(corner[0]), int(corner[1])), 3, (0, 255, 255), -1)
+                self.show(piece_cpy, delay=0)
+
         for piece in temp_pieces:
             self.show(piece, delay=200)
         return 0

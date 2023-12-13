@@ -59,6 +59,7 @@ class PuzzlePiece:
             # edge.print_edge()
 
     def rotate(self, angle):
+        
         return 0
 
     def show_puzzlepiece(self):
