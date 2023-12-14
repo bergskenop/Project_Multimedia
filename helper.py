@@ -48,7 +48,7 @@ def identify_and_place_corners(pieces, piece_dim, puzzle_dim):
 def match(pieces, puzzle_dim):
     rows, columns, depth = puzzle_dim  # kunnen we niet weten bij scrambled puzzels
     # Begin puzzelstuk zoeken door het eerste puzzelstuk met 2 rechte lijnen te vinden en dit te draaien tot het
-    # hoekpunt linksboven is zodat w esteeds van daaruit vertrekken bij het matchen van puzzelstukken
+    # hoekpunt linksboven is zodat we steeds van daaruit vertrekken bij het matchen van puzzelstukken
     i = 0
     corner_found = False
     while not corner_found:
@@ -69,8 +69,6 @@ def match(pieces, puzzle_dim):
     pieces_copy = pieces
     pieces_solved = [pieces[i]]
     pieces_copy.remove(pieces[i])
-    # Bereken de grootte van de opgeloste image op basis van het eerste puzzelstuk
-    solved_image = np.zeros([pieces[i].get_height() * rows, pieces[i].get_width() * columns, 3], dtype=np.uint8)
 
     # Dimensie instellen voor oneven puzzelpieces die geen rechthoek zijn (2x3 alles behalve 05 en 07)
     grootste_dim = max(rows, columns)
@@ -98,7 +96,7 @@ def match(pieces, puzzle_dim):
             else:
                 columns = grootste_dim
                 rows = kleinste_dim
-        if pieces_solved[number].get_edges()[2].get_type().lower() == 'straight':
+        if (number + 1) % columns == 0:
             type_of_edge_to_match = pieces_solved[len(pieces_solved) - columns].get_edges()[1].get_type()
             hist_of_edge_to_match = pieces_solved[len(pieces_solved) - columns].get_edges()[1].get_histogram()
             lengte_of_edge_to_match = pieces_solved[len(pieces_solved) - columns].get_edges()[1].get_lengte()
@@ -108,9 +106,9 @@ def match(pieces, puzzle_dim):
             type_of_edge_to_match = pieces_solved[number].get_edges()[2].get_type().lower()
             lengte_of_edge_to_match = pieces_solved[number].get_edges()[2].get_lengte()
             hist_of_edge_to_match = pieces_solved[number].get_edges()[2].get_histogram()
-        cv2.imshow(f'piece {number}', pieces_solved[number].get_piece())
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        # cv2.imshow(f'piece {number}', pieces_solved[number].get_piece())
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
         print(f"lengte_of_edge_to_match => {lengte_of_edge_to_match}")
         print(f"type_of_edge_to_match => {type_of_edge_to_match}")
         best_piece = None
@@ -157,41 +155,50 @@ def match(pieces, puzzle_dim):
     print(f"Edge 1 is van type: {pieces_solved[len(pieces_solved)-1].get_edges()[1].get_type()}, en lengte: {pieces_solved[len(pieces_solved)-1].get_edges()[1].get_lengte()}")
     print(f"Edge 2 is van type: {pieces_solved[len(pieces_solved)-1].get_edges()[2].get_type()}, en lengte: {pieces_solved[len(pieces_solved)-1].get_edges()[2].get_lengte()}")
     print(f"Edge 3 is van type: {pieces_solved[len(pieces_solved)-1].get_edges()[3].get_type()}, en lengte: {pieces_solved[len(pieces_solved)-1].get_edges()[3].get_lengte()}")
-    cv2.imshow('laatste piece', pieces_solved[len(pieces_solved)-1].get_piece())
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.imshow('laatste piece', pieces_solved[len(pieces_solved)-1].get_piece())
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
     # for n, piece in enumerate(pieces_solved):
     #     cv2.imshow(f"piece {n+1}", piece.get_piece())
     #     cv2.waitKey(0)
     #     cv2.destroyAllWindows()
 
-    # maal_y = -1
-    # for n, piece in enumerate(pieces_solved):
-    #     piece_img = piece.get_piece()
-    #     temp_image = np.zeros_like(solved_image)
-    #
-    #     if (n+1) % 2 == 0:
-    #         min_x = piece.get_width()
-    #     else:
-    #         min_x = 0
-    #     if n % 2 == 0:
-    #         maal_y += 1
-    #     min_y = maal_y * piece.get_height()
-    #     max_x = min_x + piece.get_piece_width()
-    #     max_y = min_y + piece.get_piece_height()
-    #
-    #     temp_image[min_y:max_y, min_x:max_x, :] = piece_img
-    #     solved_image = cv2.bitwise_or(solved_image, temp_image, mask=None)
-    #     # print(solved_image.shape)  # (726, 480, 3)
-    #
-    #     cv2.imshow("solved_image", solved_image)
-    #     cv2.waitKey(0)
-    #     cv2.destroyAllWindows()
+    solved_width = 0
+    solved_height = 0
+    pieces_solved = np.array(pieces_solved).reshape(rows, columns)
+    print(pieces_solved.shape)
+    for row in range(rows):
+        for col in range(columns):
+            if pieces_solved[row][col].get_piece_height() > solved_height:
+                solved_height = pieces_solved[row][col].get_piece_height()
+            if pieces_solved[row][col].get_piece_width() > solved_width:
+                solved_width = pieces_solved[row][col].get_piece_width()
 
+    solved_image = np.zeros([solved_height * rows, solved_width * columns, 3], dtype=np.uint8)
+    min_y = 0
+    max_y = 0
+    print(f'rows: {rows}, columns: {columns}')
+    for row, row_pieces in enumerate(pieces_solved):
+        min_x = 0
+        max_x = 0
 
+        for column, piece in enumerate(row_pieces):
+            max_x += piece.get_piece_width()
+            max_y = min_y + piece.get_piece_height()
+            # cv2.imshow('next piece', piece.get_piece())
+            # cv2.waitKey(0)
+            print(
+                f'position: ({row}, {column}) -> {piece.get_height()} by {piece.get_width()} and {piece.get_piece_height()} by {piece.get_piece_width()} ')
 
+            temp_img = np.zeros_like(solved_image)
+            temp_img[min_y:max_y, min_x:max_x, :] = piece.get_piece()
+            solved_image = cv2.bitwise_or(solved_image, temp_img, mask=None)
+            min_x = max_x
 
+        min_y += solved_height
+    cv2.imshow('solved_image', solved_image)
+    cv2.waitKey(0)
 
 
 def match_histogram(hist_to_compare, hist_array):
