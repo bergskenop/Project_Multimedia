@@ -88,8 +88,10 @@ class Edge:
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
         hist = cv2.calcHist([gray_image], [0], mask_perfect, [256], [0, 256])
-        hist_normalized = cv2.normalize(hist, hist, 0, 1, cv2.NORM_MINMAX)
-        self.histogram = hist_normalized
+        self.histogram = cv2.normalize(hist, hist, 0, 1, cv2.NORM_MINMAX)
+        # plt.plot(self.histogram)
+        # plt.show()
+
 
 
 

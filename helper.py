@@ -45,7 +45,6 @@ def identify_and_place_corners(pieces, piece_dim, puzzle_dim):
 
 
 
-
 def match(pieces, puzzle_dim):
     rows, columns, depth = puzzle_dim  # kunnen we niet weten bij scrambled puzzels
     # Begin puzzelstuk zoeken door het eerste puzzelstuk met 2 rechte lijnen te vinden en dit te draaien tot het
@@ -73,46 +72,91 @@ def match(pieces, puzzle_dim):
     # Bereken de grootte van de opgeloste image op basis van het eerste puzzelstuk
     solved_image = np.zeros([pieces[i].get_height() * rows, pieces[i].get_width() * columns, 3], dtype=np.uint8)
 
+    # Dimensie instellen voor oneven puzzelpieces die geen rechthoek zijn (2x3 alles behalve 05 en 07)
+    grootste_dim = max(rows, columns)
+    kleinste_dim = min(rows, columns)
+    if pieces_solved[0].get_width() < pieces_solved[0].get_height():
+        columns = grootste_dim
+        rows = kleinste_dim
+    else:
+        columns = kleinste_dim
+        rows = grootste_dim
     print(f"rows, columns => {rows, columns}")
     for number in range(rows * columns - 1):
         newLine = False
-        cv2.imshow(f'piece {number}', pieces_solved[number].get_piece())
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        print("############")
+        print(f"Edge 0 is van type: {pieces_solved[number].get_edges()[0].get_type()}, en lengte: {pieces_solved[number].get_edges()[0].get_lengte()}")
+        print(f"Edge 1 is van type: {pieces_solved[number].get_edges()[1].get_type()}, en lengte: {pieces_solved[number].get_edges()[1].get_lengte()}")
+        print(f"Edge 2 is van type: {pieces_solved[number].get_edges()[2].get_type()}, en lengte: {pieces_solved[number].get_edges()[2].get_lengte()}")
+        print(f"Edge 3 is van type: {pieces_solved[number].get_edges()[3].get_type()}, en lengte: {pieces_solved[number].get_edges()[3].get_lengte()}")
+        # Als we het 2de puzzelstuk behandeld hebben bij een 2x3 met vierkante vorm (2x3 alles behalve 05 en 07)
+        if (grootste_dim != kleinste_dim and pieces_solved[0].get_width() + 5 >
+                pieces_solved[0].get_height() > pieces_solved[0].get_width() - 5 and number == 1):
+            if pieces_solved[number].get_edges()[3].get_type() == 'straight' and pieces_solved[number].get_edges()[2].get_type() == 'straight':
+                columns = kleinste_dim
+                rows = grootste_dim
+            else:
+                columns = grootste_dim
+                rows = kleinste_dim
         if pieces_solved[number].get_edges()[2].get_type().lower() == 'straight':
             type_of_edge_to_match = pieces_solved[len(pieces_solved) - columns].get_edges()[1].get_type()
             hist_of_edge_to_match = pieces_solved[len(pieces_solved) - columns].get_edges()[1].get_histogram()
             lengte_of_edge_to_match = pieces_solved[len(pieces_solved) - columns].get_edges()[1].get_lengte()
             newLine = True
-            print("Rechtse rand is straight")
+            print(newLine)
         else:
             type_of_edge_to_match = pieces_solved[number].get_edges()[2].get_type().lower()
             lengte_of_edge_to_match = pieces_solved[number].get_edges()[2].get_lengte()
             hist_of_edge_to_match = pieces_solved[number].get_edges()[2].get_histogram()
+        cv2.imshow(f'piece {number}', pieces_solved[number].get_piece())
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
         print(f"lengte_of_edge_to_match => {lengte_of_edge_to_match}")
+        print(f"type_of_edge_to_match => {type_of_edge_to_match}")
         best_piece = None
         best_piece_edge_number = None
-        best_match_value = 10000
+        best_match_value1 = 100000
+        # Het toevoegen van meerdere histogram matching methodes heeft geen effect op 2x3_01, hier wert chi-kwadraat wel het slechtste
+        # best_match_value2 = 100000
+        # best_match_value3 = 0
+        # best_match_value4 = 0
         for piece in pieces_copy:
             for n, edge in enumerate(piece.get_edges()):
                 if ((edge.get_lengte() + 5 > lengte_of_edge_to_match > edge.get_lengte() - 5) and
                         ((edge.get_type() == 'innie' and type_of_edge_to_match == 'outie') or
                          (edge.get_type() == 'outie' and type_of_edge_to_match == 'innie'))):
-                    value = cv2.compareHist(hist_of_edge_to_match, edge.get_histogram(), method=1)
-                    print(f"value => {value}")
-                    if best_match_value == 1000000 or best_match_value > value:
-                        best_match_value = value
+                    # method: 0 => correlation, 1 => chi-square, 2 => intersection en 3 => Bhattacharyya
+                    value1 = cv2.compareHist(hist_of_edge_to_match, edge.get_histogram(), method=3)
+                    # print(f"value => {value1}")
+                    # value2 = cv2.compareHist(hist_of_edge_to_match, edge.get_histogram(), method=3)
+                    # value3 = cv2.compareHist(hist_of_edge_to_match, edge.get_histogram(), method=0)
+                    # value4 = cv2.compareHist(hist_of_edge_to_match, edge.get_histogram(), method=2)
+                    # cv2.imshow(f'mogelijke best piece met rand {n}', piece.get_piece())
+                    # cv2.waitKey(0)
+                    # cv2.destroyAllWindows()
+                    if best_match_value1 > value1:  # and best_match_value2 > value2 and best_match_value3 < value3 and best_match_value4 < value4:
+                        best_match_value1 = value1
+                        # best_match_value2 = value2
+                        # best_match_value3 = value3
+                        # best_match_value4 = value4
                         best_piece = piece
                         best_piece_edge_number = n
         # de index van de rand geeft aan hoeveel graden het puzzelstuk gedraaid moet worden.
-        best_piece_copy = best_piece
+        # best_piece_copy = best_piece
         if not newLine:
-            best_piece_copy.rotate(best_piece_edge_number * 90)
-            pieces_solved.append(best_piece_copy)
+            print(f"Rotate ==============> {best_piece_edge_number * 90}")
+            best_piece.rotate(best_piece_edge_number * 90)
+            pieces_solved.append(best_piece)
         else:
-            best_piece_copy.rotate(-(3 - best_piece_edge_number) * 90)
-            pieces_solved.append(best_piece_copy)
+            print(f"Rotate ==============> {360-(3 - best_piece_edge_number) * 90}")
+            best_piece.rotate(360-(3 - best_piece_edge_number) * 90)
+            pieces_solved.append(best_piece)
         pieces_copy.remove(best_piece)
+    print("############")
+    print(f"Edge 0 is van type: {pieces_solved[len(pieces_solved)-1].get_edges()[0].get_type()}, en lengte: {pieces_solved[len(pieces_solved)-1].get_edges()[0].get_lengte()}")
+    print(f"Edge 1 is van type: {pieces_solved[len(pieces_solved)-1].get_edges()[1].get_type()}, en lengte: {pieces_solved[len(pieces_solved)-1].get_edges()[1].get_lengte()}")
+    print(f"Edge 2 is van type: {pieces_solved[len(pieces_solved)-1].get_edges()[2].get_type()}, en lengte: {pieces_solved[len(pieces_solved)-1].get_edges()[2].get_lengte()}")
+    print(f"Edge 3 is van type: {pieces_solved[len(pieces_solved)-1].get_edges()[3].get_type()}, en lengte: {pieces_solved[len(pieces_solved)-1].get_edges()[3].get_lengte()}")
     cv2.imshow('laatste piece', pieces_solved[len(pieces_solved)-1].get_piece())
     cv2.waitKey(0)
     cv2.destroyAllWindows()
@@ -147,24 +191,16 @@ def match(pieces, puzzle_dim):
 
 
 
-    def match_histogram(hist_to_compare, hist_array):
-        # method: 0 => correlation, 1 => chi-square, 2 => intersection en 3 => Bhattacharyya
-        best_match_index = 0
-        best_match_value = cv2.compareHist(hist_to_compare, hist_array[0], method=1)
-        for n in range(1, len(hist_array)):
-            value = cv2.compareHist(hist_to_compare, hist_array[n], method=1)
-            if value < best_match_value:
-                best_match_index = n
-                best_match_value = value
-        return best_match_index
 
 
 
-
-
-        # We kijken naar de rechterrand van het laatst gevonden puzzelstuk en kijken welke puzzelstukken voldoen aan
-        # de eisen om een mogelijk juist puzzelstuk te zijn, dat is namelijk dat ze een innie rand moeten hebben als de
-        # rechterrand van het laatst gevonden puzzelstuk een outie was en omgekeer
-        # en ze moeten ook ongeveer dezelfde lengte hebben.
-        # Wanneer de rechterrand van het laatst gevonden puzzelstuk een rechte lijne is zullen de mogelijk
-        # juiste puzzelstukken ook een rechte rand van ongeveer die lengte moeten hebben.
+def match_histogram(hist_to_compare, hist_array):
+    # method: 0 => correlation, 1 => chi-square, 2 => intersection en 3 => Bhattacharyya
+    best_match_index = 0
+    best_match_value = cv2.compareHist(hist_to_compare, hist_array[0], method=1)
+    for n in range(1, len(hist_array)):
+        value = cv2.compareHist(hist_to_compare, hist_array[n], method=1)
+        if value < best_match_value:
+            best_match_index = n
+            best_match_value = value
+    return best_match_index

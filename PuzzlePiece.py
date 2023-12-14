@@ -1,5 +1,4 @@
 import imutils
-
 from Edge import *
 import cv2
 

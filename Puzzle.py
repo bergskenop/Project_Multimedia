@@ -1,7 +1,5 @@
 from PuzzlePiece import *
 import re
-import cv2
-import numpy as np
 from helper import *
 
 
@@ -57,14 +55,12 @@ class Puzzle:
             contour_img = np.zeros_like(self.image)
             cv2.drawContours(contour_img, self.contours, n, (255, 255, 255), thickness=cv2.FILLED)
             gray = cv2.cvtColor(contour_img, cv2.COLOR_BGR2GRAY)
-            # qual=0.1, minDist=10, blocksize=7, k=0.21 => alles shuffled/rotated behalve 3 puzzels => 5x5 01, 03 en 06
-            # Werkt nog niet goed voor scrambled puzzelstukken
-
             kernel = np.ones((3, 3), np.uint8)
             dilate = cv2.dilate(gray, kernel, iterations=1)
             erosion = cv2.erode(gray, kernel, iterations=1)
             cnt = cv2.bitwise_xor(erosion, dilate, mask=None)
-
+            # qual=0.1, minDist=10, blocksize=7, k=0.21 => alles shuffled/rotated behalve 3 puzzels => 5x5 01, 03 en 06
+            # Werkt nog niet goed voor scrambled puzzelstukken
             corners = cv2.goodFeaturesToTrack(cnt, maxCorners=4, qualityLevel=0.1, minDistance=10,
                                               blockSize=7, useHarrisDetector=True, k=0.21)
             corners = np.int32(corners)
@@ -105,12 +101,6 @@ class Puzzle:
 
     def scrambled2rotated(self):
         return 0
-
-    # def type_based_matching(self):
-    #     # Shuffled 2x2 solver
-    #     self.show(match(self.puzzle_pieces,
-    #                                          (self.height_puzzle_piece, self.width_puzzle_piece),
-    #                                          (self.rows, self.columns, 3)))
 
     def match(self):
         match(self.puzzle_pieces, (self.rows, self.columns, 3))
