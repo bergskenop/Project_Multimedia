@@ -70,8 +70,7 @@ def match(pieces, puzzle_dim):
     pieces_copy = pieces
     pieces_solved = [pieces[i]]
     pieces_copy.remove(pieces[i])
-    # Bereken de grootte van de opgeloste image op basis van het eerste puzzelstuk
-    solved_image = np.zeros([pieces[i].get_height() * rows, pieces[i].get_width() * columns, 3], dtype=np.uint8)
+
 
     for number in range(rows * columns - 1):
         newLine = False
@@ -92,10 +91,7 @@ def match(pieces, puzzle_dim):
                 if ((edge.get_lengte() + 5 > lengte_of_edge_to_match > edge.get_lengte() - 5) and
                         ((edge.get_type() == 'innie' and type_of_edge_to_match == 'outie') or
                          (edge.get_type() == 'outie' and type_of_edge_to_match == 'innie'))):
-                    # cv2.imshow('t', piece.get_piece())
-                    # cv2.waitKey(0)
                     value = cv2.compareHist(hist_of_edge_to_match, edge.get_histogram(), method=1)
-                    print(value)
                     if best_match_value == 1000000 or best_match_value > value:
                         best_match_value = value
                         best_piece = piece
@@ -110,28 +106,101 @@ def match(pieces, puzzle_dim):
             pieces_solved.append(best_piece_copy)
         pieces_copy.remove(best_piece)
 
-    for piece in pieces_solved:
-        cv2.imshow("piece", piece.get_piece())
-        cv2.waitKey(0)
+    # for piece in pieces_solved:
+    #     cv2.imshow("piece", piece.get_piece())
+    #     cv2.waitKey(0)
 
-        # min_x = 0
-        # min_y = 0
-        # max_x = pieces_solved[0].get_piece_width()
-        # max_y = pieces_solved[0].get_piece_height()
-        # for n, piece in enumerate(pieces_solved):
-        #     piece_img = piece.get_piece()
-        #     temp_image = np.zeros_like(solved_image)
-        #
-        #     temp_image[min_x:max_x, min_y:max_y, :] = piece_img
-        #     solved_image = cv2.bitwise_or(solved_image, temp_image, mask=None)
-        #
-        #     min_x += piece.get_width()
-        #     max_x = piece.get_width() * n + piece.get_piece_width()
+        # for piece in pieces_solved:
+        #     cv2.imshow("piece", piece.get_piece())
+        #     cv2.waitKey(0)
 
 
+    # Bereken de grootte van de opgeloste image op basis van het eerste puzzelstuk
 
+    #
+    # max_x = max_x + pieces_solved[0].get_piece_width()
+    # max_y = pieces_solved[0].get_piece_height()
+    #
+    # piece_img = pieces_solved[0].get_piece()
+    # temp_image = np.zeros_like(solved_image)
+    # temp_image[min_y:max_y, min_x:max_x, :] = piece_img
+    # solved_image = cv2.bitwise_or(solved_image, temp_image, mask=None)
+    #
+    # min_x = pieces_solved[0].get_width()+(pieces_solved[1].get_width()-pieces_solved[1].get_piece_width())
+    # min_y = 0
+    #
+    # max_y = pieces_solved[1].get_piece_height()
+    #
+    # piece_img = pieces_solved[1].get_piece()
+    # temp_image = np.zeros_like(solved_image)
+    # temp_image[min_y:max_y, min_x:, :] = piece_img
+    # solved_image = cv2.bitwise_or(solved_image, temp_image, mask=None)
+    #
+    # cv2.imshow('solved_image', solved_image)
+    # cv2.waitKey(0)
 
+    solved_width = 0
+    solved_height = 0
+    pieces_solved = np.array(pieces_solved).reshape(columns, rows)
+    for row in range(0, rows):
+        tempvar = 0
+        for col in range(0, columns):
+            tempvar += pieces_solved[col][row].get_height()
+        if tempvar > solved_height:
+            solved_height = tempvar
+    for col in range(0, columns):
+        tempvar = 0
+        for row in range(0, rows):
+            tempvar += pieces_solved[col][row].get_width()
+        if tempvar > solved_width:
+            solved_width = tempvar
 
+    solved_image = np.zeros([solved_height+((rows-1)*4), solved_width+((columns-1)*4),  3], dtype=np.uint8)
+    min_y = 0
+    max_y = 0
+    width = pieces_solved[0][0].get_width()
+    height = pieces_solved[0][0].get_height()
+    for row, row_pieces in enumerate(pieces_solved):
+        min_x = 0
+
+        for column, piece in enumerate(row_pieces):
+            cv2.imshow('next piece', piece.get_piece())
+            cv2.waitKey(0)
+            print(f'position: ({row}, {column}) -> {piece.get_height()} by {piece.get_width()} and {piece.get_piece_height()} by {piece.get_piece_width()} ')
+            max_y = min_y+piece.get_piece_height()
+            max_x = min_x+piece.get_piece_width()
+            if height != piece.get_piece_height() and row >0:
+                min_y -= abs(height - piece.get_piece_height())-2
+            temp_img = np.zeros_like(solved_image)
+            temp_img[min_y:max_y, min_x:max_x, :] = piece.get_piece()
+            solved_image = cv2.bitwise_or(solved_image, temp_img, mask=None)
+            min_x += width+((column+1)*2)
+            if height != piece.get_piece_height() and row > 0:
+                min_y += abs(height - piece.get_piece_height())+2
+
+            cv2.imshow('solved_image', solved_image)
+            cv2.waitKey(0)
+        min_y += height + ((row+1)*2)
+
+    # r = 0
+    # for n, piece in enumerate(pieces_solved):
+    #     if n % columns == 0 and n != 0:
+    #         min_x = 0
+    #         r += 1
+    #     min_y = r * pieces_solved[n-(r*columns)].get_height()
+    #     max_x = min_x+piece.get_piece_width()
+    #     max_y = min_y+piece.get_piece_height()
+    #
+    #     piece_img = piece.get_piece()
+    #     temp_image = np.zeros_like(solved_image)
+    #
+    #     temp_image[min_y:max_y, min_x:max_x, :] = piece_img
+    #     solved_image = cv2.bitwise_or(solved_image, temp_image, mask=None)
+    #
+    #     min_x = min_x + piece.get_width()
+    #
+    #     cv2.imshow('solved_image', solved_image)
+    #     cv2.waitKey(0)
 
     def match_histogram(hist_to_compare, hist_array):
         # method: 0 => correlation, 1 => chi-square, 2 => intersection en 3 => Bhattacharyya
