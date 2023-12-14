@@ -79,10 +79,11 @@ class PuzzlePiece:
             edge.set_type(i, width, height)
             edge.calculate_histogram(image)
             edge.print_edge()
+        print("-----------------------------")
 
     def rotate(self, angle):
         self.piece = imutils.rotate_bound(self.piece, angle)
-        multiples = angle // 90
+        multiples = np.abs(angle // 90)
         for i in range(0, multiples):
             self.edges = self.edges[1:] + self.edges[:1]
             self.piece_width, self.piece_height = self.piece_height, self.piece_width

@@ -73,17 +73,23 @@ def match(pieces, puzzle_dim):
     # Bereken de grootte van de opgeloste image op basis van het eerste puzzelstuk
     solved_image = np.zeros([pieces[i].get_height() * rows, pieces[i].get_width() * columns, 3], dtype=np.uint8)
 
+    print(f"rows, columns => {rows, columns}")
     for number in range(rows * columns - 1):
         newLine = False
+        cv2.imshow(f'piece {number}', pieces_solved[number].get_piece())
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
         if pieces_solved[number].get_edges()[2].get_type().lower() == 'straight':
             type_of_edge_to_match = pieces_solved[len(pieces_solved) - columns].get_edges()[1].get_type()
             hist_of_edge_to_match = pieces_solved[len(pieces_solved) - columns].get_edges()[1].get_histogram()
             lengte_of_edge_to_match = pieces_solved[len(pieces_solved) - columns].get_edges()[1].get_lengte()
             newLine = True
+            print("Rechtse rand is straight")
         else:
             type_of_edge_to_match = pieces_solved[number].get_edges()[2].get_type().lower()
             lengte_of_edge_to_match = pieces_solved[number].get_edges()[2].get_lengte()
             hist_of_edge_to_match = pieces_solved[number].get_edges()[2].get_histogram()
+        print(f"lengte_of_edge_to_match => {lengte_of_edge_to_match}")
         best_piece = None
         best_piece_edge_number = None
         best_match_value = 10000
@@ -92,10 +98,8 @@ def match(pieces, puzzle_dim):
                 if ((edge.get_lengte() + 5 > lengte_of_edge_to_match > edge.get_lengte() - 5) and
                         ((edge.get_type() == 'innie' and type_of_edge_to_match == 'outie') or
                          (edge.get_type() == 'outie' and type_of_edge_to_match == 'innie'))):
-                    # cv2.imshow('t', piece.get_piece())
-                    # cv2.waitKey(0)
                     value = cv2.compareHist(hist_of_edge_to_match, edge.get_histogram(), method=1)
-                    print(value)
+                    print(f"value => {value}")
                     if best_match_value == 1000000 or best_match_value > value:
                         best_match_value = value
                         best_piece = piece
@@ -106,30 +110,40 @@ def match(pieces, puzzle_dim):
             best_piece_copy.rotate(best_piece_edge_number * 90)
             pieces_solved.append(best_piece_copy)
         else:
-            best_piece_copy.rotate((3 - best_piece_edge_number) * 90)
+            best_piece_copy.rotate(-(3 - best_piece_edge_number) * 90)
             pieces_solved.append(best_piece_copy)
         pieces_copy.remove(best_piece)
+    cv2.imshow('laatste piece', pieces_solved[len(pieces_solved)-1].get_piece())
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
-    for piece in pieces_solved:
-        cv2.imshow("piece", piece.get_piece())
-        cv2.waitKey(0)
+    # for n, piece in enumerate(pieces_solved):
+    #     cv2.imshow(f"piece {n+1}", piece.get_piece())
+    #     cv2.waitKey(0)
+    #     cv2.destroyAllWindows()
 
-        # min_x = 0
-        # min_y = 0
-        # max_x = pieces_solved[0].get_piece_width()
-        # max_y = pieces_solved[0].get_piece_height()
-        # for n, piece in enumerate(pieces_solved):
-        #     piece_img = piece.get_piece()
-        #     temp_image = np.zeros_like(solved_image)
-        #
-        #     temp_image[min_x:max_x, min_y:max_y, :] = piece_img
-        #     solved_image = cv2.bitwise_or(solved_image, temp_image, mask=None)
-        #
-        #     min_x += piece.get_width()
-        #     max_x = piece.get_width() * n + piece.get_piece_width()
-
-
-
+    # maal_y = -1
+    # for n, piece in enumerate(pieces_solved):
+    #     piece_img = piece.get_piece()
+    #     temp_image = np.zeros_like(solved_image)
+    #
+    #     if (n+1) % 2 == 0:
+    #         min_x = piece.get_width()
+    #     else:
+    #         min_x = 0
+    #     if n % 2 == 0:
+    #         maal_y += 1
+    #     min_y = maal_y * piece.get_height()
+    #     max_x = min_x + piece.get_piece_width()
+    #     max_y = min_y + piece.get_piece_height()
+    #
+    #     temp_image[min_y:max_y, min_x:max_x, :] = piece_img
+    #     solved_image = cv2.bitwise_or(solved_image, temp_image, mask=None)
+    #     # print(solved_image.shape)  # (726, 480, 3)
+    #
+    #     cv2.imshow("solved_image", solved_image)
+    #     cv2.waitKey(0)
+    #     cv2.destroyAllWindows()
 
 
 
