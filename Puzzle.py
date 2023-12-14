@@ -100,17 +100,81 @@ class Puzzle:
             # puzzle_piece.print_puzzlepiece()  # information about individual puzzlepiece
 
     def scrambled2rotated(self):
+        img_gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
+        ret, thresh = cv2.threshold(img_gray, 0, 254, 0)
+        contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+        contours = sorted(contours, key=cv2.contourArea, reverse=True)
+        contours = contours[:self.size]
+        temp_pieces = []
+        for contour in contours:
+            contour = np.squeeze(contour)
+            list_contour = list(zip(contour[:, 0], contour[:, 1]))
+            min_x = min(list_contour, key=lambda x: x[0])[0]
+            max_x = max(list_contour, key=lambda x: x[0])[0]
+            min_y = min(list_contour, key=lambda x: x[1])[1]
+            max_y = max(list_contour, key=lambda x: x[1])[1]
+            temp_pieces.append(self.image[min_y - 5:max_y + 5, min_x - 5:max_x + 5, :])
+
+        rotated_list = []
+        for i in range(0, 1):
+            for p, piece in enumerate(temp_pieces):
+                piece_gray = cv2.cvtColor(piece, cv2.COLOR_BGR2GRAY)
+                ret, piece_thresh = cv2.threshold(piece_gray, 0, 254, 0)
+                kernel = np.ones((3, 3), np.uint8)
+                dilate = cv2.dilate(piece_thresh, kernel, iterations=1)
+                erosion = cv2.erode(piece_thresh, kernel, iterations=1)
+                cnt = cv2.bitwise_xor(erosion, dilate, mask=None)
+                thres_n = 80
+                lines = cv2.HoughLines(cnt, 1, np.pi / 180, threshold=thres_n)
+                angles = []
+                while lines is None and thres_n >= 20:
+                    thres_n -= 5
+                    lines = cv2.HoughLines(cnt, 1, np.pi / 180, threshold=thres_n)
+                print(f'threshold value: {thres_n}')
+                if lines is not None:
+                    for line in lines:
+                        rho, theta = line[0]
+                        angle = np.degrees(theta)
+                        if 0 <= angle <= 90:
+                            angles.append(angle)
+                    if len(angles) > 1:
+                        # Compute the median angle
+                        median_angle = np.median(angles)
+
+                        # Calculate the rotation angle
+                        rotation_angle = (90.0 - median_angle)
+                        print(rotation_angle)
+
+                        piece = imutils.rotate_bound(piece, rotation_angle)
+                    temp_pieces[p] = piece
+        rotated_list = temp_pieces
+        self.place_pieces(rotated_list)
         return 0
+
+    def place_pieces(self, pieces):
+        max_height = max(piece.shape[0] for piece in pieces)
+        max_width = max(piece.shape[1] for piece in pieces)
+        rotated_puzzle = np.zeros([max_height * self.rows, max_width * self.columns, 3], dtype=np.uint8)
+
+        for i in range(self.rows):
+            for j in range(self.columns):
+                piece = pieces[i * self.columns + j]
+
+                y_offset = i * max_height
+                x_offset = j * max_width
+
+                rotated_puzzle[y_offset:y_offset + piece.shape[0], x_offset:x_offset + piece.shape[1]] = piece
+        self.show(rotated_puzzle, delay=0)
 
     def match(self):
         match(self.puzzle_pieces, (self.rows, self.columns, 3))
 
-    def show(self, img=None):
+    def show(self, img=None, delay=0):
         if img is None:
             cv2.imshow(f'Puzzle {self.rows}x{self.columns} {self.type}', self.image)
         else:
             cv2.imshow(f'Puzzle {self.rows}x{self.columns} {self.type}', img)
-        cv2.waitKey(0)
+        cv2.waitKey(delay)
 
     def draw_contours(self):
         img_contours = np.zeros_like(self.image)
