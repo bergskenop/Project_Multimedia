@@ -28,6 +28,7 @@ class Puzzle:
         self.solved_image = None  # Uiteindelijk resultaat komt hier terecht
 
     def initialise_puzzle(self):
+        self.show(delay=0)
         self.set_puzzle_parameters()  # Parameterbepaling uit filename
         if self.type == 2:
             self.scrambled2rotated()
@@ -104,16 +105,11 @@ class Puzzle:
             # puzzle_piece.print_puzzlepiece()  # information about individual puzzlepiece
 
     def scrambled2rotated(self):
-        img_copy = self.image.copy()
         img_gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
         ret, thresh = cv2.threshold(img_gray, 0, 254, 0)
         contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
         contours = sorted(contours, key=cv2.contourArea, reverse=True)
         contours = contours[:self.size]
-        # self.show(img_copy, delay=0)
-        # for i, contour in enumerate(contours):
-        #     cv2.drawContours(img_copy, contours, 16, (255, 0, 255), thickness=cv2.FILLED)
-        #     self.show(img_copy, delay=0)
         temp_pieces = []
         for contour in contours:
             contour = np.squeeze(contour)
@@ -122,36 +118,57 @@ class Puzzle:
             max_x = max(list_contour, key=lambda x: x[0])[0]
             min_y = min(list_contour, key=lambda x: x[1])[1]
             max_y = max(list_contour, key=lambda x: x[1])[1]
-            temp_pieces.append(self.image[min_y-5:max_y+5, min_x-5:max_x+5, :])
+            temp_pieces.append(self.image[min_y - 5:max_y + 5, min_x - 5:max_x + 5, :])
 
-        for p,piece in enumerate(temp_pieces):
-            piece_gray = cv2.cvtColor(piece, cv2.COLOR_BGR2GRAY)
-            ret, piece_thresh = cv2.threshold(piece_gray, 0, 254, 0)
-            edges = cv2.Canny(piece_thresh, 50, 150, apertureSize=3)
-            for i in range(0, 90):
-                rotate = imutils.rotate_bound(edges, i)
-                img_copy = imutils.rotate_bound(piece, i)
-                lines = cv2.HoughLines(rotate, 1, np.pi/180, threshold=80)
-                lines_hv = 0
+        rotated_list = []
+        for i in range(0,1):
+            for p, piece in enumerate(temp_pieces):
+                piece_gray = cv2.cvtColor(piece, cv2.COLOR_BGR2GRAY)
+                ret, piece_thresh = cv2.threshold(piece_gray, 0, 254, 0)
+                kernel = np.ones((3, 3), np.uint8)
+                dilate = cv2.dilate(piece_thresh, kernel, iterations=1)
+                erosion = cv2.erode(piece_thresh, kernel, iterations=1)
+                cnt = cv2.bitwise_xor(erosion, dilate, mask=None)
+                thres_n = 80
+                lines = cv2.HoughLines(cnt, 1, np.pi / 180, threshold=thres_n)
+                angles = []
+                while lines is None and thres_n >= 20:
+                    thres_n -= 5
+                    lines = cv2.HoughLines(cnt, 1, np.pi / 180, threshold=thres_n)
+                print(f'threshold value: {thres_n}')
                 if lines is not None:
                     for line in lines:
                         rho, theta = line[0]
                         angle = np.degrees(theta)
-                        a = np.cos(theta)
-                        b = np.sin(theta)
-                        x0 = a * rho
-                        y0 = b * rho
-                        if 0 == angle  or angle == 90:
-                            lines_hv += 1
-                            # cv2.line(img_copy, (int(x0 + 1000 * (-b)), int(y0 + 1000 * (a))),
-                            #              (int(x0 - 1000 * (-b)), int(y0 - 1000 * (a))), (0, 0, 255), 2)
-                if lines_hv == 4:
-                    temp_pieces[p] = imutils.rotate_bound(piece, i)
-                    # cv2.imshow('rotation', piece)
-                    break
-        for piece in temp_pieces:
-            self.show(piece, delay=200)
+                        if 0 <= angle <= 90:
+                            angles.append(angle)
+                    if len(angles) > 1:
+                        # Compute the median angle
+                        median_angle = np.median(angles)
+
+                        # Calculate the rotation angle
+                        rotation_angle = 90.0 - median_angle
+
+                        piece = imutils.rotate_bound(piece, rotation_angle)
+                    temp_pieces[p] = piece
+        rotated_list = temp_pieces
+        self.place_pieces(rotated_list)
         return 0
+
+    def place_pieces(self, pieces):
+        max_height = max(piece.shape[0] for piece in pieces)
+        max_width = max(piece.shape[1] for piece in pieces)
+        rotated_puzzle = np.zeros([max_height*self.rows, max_width*self.columns, 3], dtype=np.uint8)
+
+        for i in range(self.rows):
+            for j in range(self.columns):
+                piece = pieces[i * self.columns + j]
+
+                y_offset = i * max_height
+                x_offset = j * max_width
+
+                rotated_puzzle[y_offset:y_offset + piece.shape[0], x_offset:x_offset + piece.shape[1]] = piece
+        self.show(rotated_puzzle, delay=0)
 
     # def type_based_matching(self):
     #     # Shuffled 2x2 solver
@@ -162,10 +179,10 @@ class Puzzle:
     def show(self, img=None, delay=20):
         if img is None:
             # cv2.namedWindow(f'Puzzle {self.rows}x{self.columns} {self.type}', cv2.WINDOW_AUTOSIZE)
-            cv2.imshow(f'Puzzle {self.rows}x{self.columns} {self.type}', self.image)
+            cv2.imshow(f'Puzzle', self.image)
         else:
             # cv2.namedWindow(f'Puzzle {self.rows}x{self.columns} {self.type}', cv2.WINDOW_KEEPRATIO)
-            cv2.imshow(f'Puzzle {self.rows}x{self.columns} {self.type}', img)
+            cv2.imshow(f'Puzzle', img)
         cv2.waitKey(delay)
 
     def draw_contours(self):
