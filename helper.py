@@ -63,6 +63,9 @@ def match(pieces, puzzle_dim):
             while (not pieces[i].get_edges()[0].get_type() == 'straight'
                    or not pieces[i].get_edges()[3].get_type() == 'straight'):
                 pieces[i].rotate(90)
+                print('rotate')
+                rows, columns = columns, rows
+
             corner_found = True
         else:
             i += 1
@@ -106,46 +109,38 @@ def match(pieces, puzzle_dim):
             pieces_solved.append(best_piece_copy)
         pieces_copy.remove(best_piece)
 
-
     solved_width = 0
     solved_height = 0
-    pieces_solved = np.array(pieces_solved).reshape(columns, rows)
+    pieces_solved = np.array(pieces_solved).reshape(rows, columns)
     for row in range(0, rows):
-        tempvar = 0
         for col in range(0, columns):
-            tempvar += pieces_solved[col][row].get_height()
-        if tempvar > solved_height:
-            solved_height = tempvar
-    for col in range(0, columns):
-        tempvar = 0
-        for row in range(0, rows):
-            tempvar += pieces_solved[col][row].get_width()
-        if tempvar > solved_width:
-            solved_width = tempvar
-
-    solved_image = np.zeros([solved_height+((rows-1)*4), solved_width+((columns-1)*4),  3], dtype=np.uint8)
+            if pieces_solved[row][col].get_piece_height() > solved_height:
+                solved_height = pieces_solved[row][col].get_piece_height()
+            if pieces_solved[row][col].get_piece_width() > solved_width:
+                solved_width = pieces_solved[row][col].get_piece_width()
+    solved_image = np.zeros([solved_height*rows, solved_width*columns,  3], dtype=np.uint8)
     min_y = 0
     max_y = 0
-    width = pieces_solved[0][0].get_width()
-    height = pieces_solved[0][0].get_height()
+    print(f'rows: {rows}, columns: {columns}')
     for row, row_pieces in enumerate(pieces_solved):
         min_x = 0
+        max_x = 0
 
         for column, piece in enumerate(row_pieces):
+            max_x += piece.get_piece_width()
             max_y = min_y+piece.get_piece_height()
-            max_x = min_x+piece.get_piece_width()
-            if height != piece.get_piece_height() and row >0:
-                min_y -= abs(height - piece.get_piece_height())-2
+            cv2.imshow('next piece', piece.get_piece())
+            cv2.waitKey(0)
+            print(f'position: ({row}, {column}) -> {piece.get_height()} by {piece.get_width()} and {piece.get_piece_height()} by {piece.get_piece_width()} ')
+
             temp_img = np.zeros_like(solved_image)
             temp_img[min_y:max_y, min_x:max_x, :] = piece.get_piece()
             solved_image = cv2.bitwise_or(solved_image, temp_img, mask=None)
-            min_x += width+((column+1)*2)
-            if height != piece.get_piece_height() and row > 0:
-                min_y += abs(height - piece.get_piece_height())+2
+            min_x = max_x
 
             cv2.imshow('solved_image', solved_image)
             cv2.waitKey(0)
-        min_y += height + ((row+1)*2)
+        min_y += max_y
 
     # r = 0
     # for n, piece in enumerate(pieces_solved):
