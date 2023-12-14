@@ -106,38 +106,6 @@ def match(pieces, puzzle_dim):
             pieces_solved.append(best_piece_copy)
         pieces_copy.remove(best_piece)
 
-    # for piece in pieces_solved:
-    #     cv2.imshow("piece", piece.get_piece())
-    #     cv2.waitKey(0)
-
-        # for piece in pieces_solved:
-        #     cv2.imshow("piece", piece.get_piece())
-        #     cv2.waitKey(0)
-
-
-    # Bereken de grootte van de opgeloste image op basis van het eerste puzzelstuk
-
-    #
-    # max_x = max_x + pieces_solved[0].get_piece_width()
-    # max_y = pieces_solved[0].get_piece_height()
-    #
-    # piece_img = pieces_solved[0].get_piece()
-    # temp_image = np.zeros_like(solved_image)
-    # temp_image[min_y:max_y, min_x:max_x, :] = piece_img
-    # solved_image = cv2.bitwise_or(solved_image, temp_image, mask=None)
-    #
-    # min_x = pieces_solved[0].get_width()+(pieces_solved[1].get_width()-pieces_solved[1].get_piece_width())
-    # min_y = 0
-    #
-    # max_y = pieces_solved[1].get_piece_height()
-    #
-    # piece_img = pieces_solved[1].get_piece()
-    # temp_image = np.zeros_like(solved_image)
-    # temp_image[min_y:max_y, min_x:, :] = piece_img
-    # solved_image = cv2.bitwise_or(solved_image, temp_image, mask=None)
-    #
-    # cv2.imshow('solved_image', solved_image)
-    # cv2.waitKey(0)
 
     solved_width = 0
     solved_height = 0
@@ -164,9 +132,6 @@ def match(pieces, puzzle_dim):
         min_x = 0
 
         for column, piece in enumerate(row_pieces):
-            cv2.imshow('next piece', piece.get_piece())
-            cv2.waitKey(0)
-            print(f'position: ({row}, {column}) -> {piece.get_height()} by {piece.get_width()} and {piece.get_piece_height()} by {piece.get_piece_width()} ')
             max_y = min_y+piece.get_piece_height()
             max_x = min_x+piece.get_piece_width()
             if height != piece.get_piece_height() and row >0:
