@@ -3,6 +3,7 @@ from tkinter import filedialog
 import numpy as np
 import re
 import os
+import math
 
 # PYTHON SCRIPT OM GEPASTE PARAMETERS VOOR HET VINDEN VAN DE HOEKEN TE PROBEREN!!
 
@@ -75,7 +76,7 @@ for n, cont in enumerate(contours):
     # cnt = cv2.bitwise_xor(erosion, dilate, mask=None)
 
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-    cnt = cv2.Canny(gray, 50, 150, apertureSize=3)
+    cnt = cv2.Canny(blurred, 50, 150, apertureSize=3)
 
     cv2.imshow('thresh', cnt)
     cv2.waitKey(0)
@@ -83,29 +84,39 @@ for n, cont in enumerate(contours):
 
     detect_image = np.zeros_like(image)
     detect_image = cv2.cvtColor(detect_image, cv2.COLOR_BGR2GRAY)
-    lines = cv2.HoughLinesP(cnt, 1, np.pi / 180, threshold=25, minLineLength=10, maxLineGap=25)
+    lines = cv2.HoughLinesP(cnt, 1, np.pi / 180, threshold=100, minLineLength=100, maxLineGap=25)
+    angles = []
     for line in lines:
         x1, y1, x2, y2 = line[0]
+        rico = (y2 - y1) / (x2 - x1)
+        angle = math.degrees(math.atan(rico))
+        if 0 <= angle <= 90:
+            angles.append(angle)
         cv2.line(detect_image, (x1, y1), (x2, y2), (255, 255, 255), 1)
+    print(angles)
+
+    angle_to_rotate = np.mean(angles)
+    print(angle_to_rotate)
+
 
     cv2.imshow('detect_image', detect_image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-    intersect_image = np.zeros_like(image)
-    intersect_image = cv2.cvtColor(intersect_image, cv2.COLOR_BGR2GRAY)
-    lines = cv2.HoughLines(detect_image, 1, np.pi / 180, threshold=40)
-    for line in lines:
-        rho, theta = line[0]
-        a = np.cos(theta)
-        b = np.sin(theta)
-        x0 = a * rho
-        y0 = b * rho
-        x1 = int(x0 + 1000 * (-b))
-        y1 = int(y0 + 1000 * (a))
-        x2 = int(x0 - 1000 * (-b))
-        y2 = int(y0 - 1000 * (a))
-        cv2.line(intersect_image, (x1, y1), (x2, y2), (255, 255, 255), 1)
+    # intersect_image = np.zeros_like(image)
+    # intersect_image = cv2.cvtColor(intersect_image, cv2.COLOR_BGR2GRAY)
+    # lines = cv2.HoughLines(detect_image, 1, np.pi / 180, threshold=40)
+    # for line in lines:
+    #     rho, theta = line[0]
+    #     a = np.cos(theta)
+    #     b = np.sin(theta)
+    #     x0 = a * rho
+    #     y0 = b * rho
+    #     x1 = int(x0 + 1000 * (-b))
+    #     y1 = int(y0 + 1000 * (a))
+    #     x2 = int(x0 - 1000 * (-b))
+    #     y2 = int(y0 - 1000 * (a))
+    #     cv2.line(intersect_image, (x1, y1), (x2, y2), (255, 255, 255), 1)
 
     # filtered_points_array = filter_points(cont_squeeze, 15)
     # for c in filtered_points_array:
@@ -114,11 +125,94 @@ for n, cont in enumerate(contours):
 
     # RANSAC PROBEREN !!!!!!!
 
-    cv2.imshow('intersect_image', intersect_image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.imshow('intersect_image', intersect_image)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
 # Display the result
 cv2.imshow('Hough Lines', image)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
+
+
+
+
+
+
+
+
+
+# code voor in scrambled to rotate dat met houghlineP werkt zodat extra parameters kunnen meegegeven worden i.p.v. houghline gewoon
+
+
+
+# for i in range(0, 1):
+#             for p, piece in enumerate(temp_pieces):
+#                 piece_gray = cv2.cvtColor(piece, cv2.COLOR_BGR2GRAY)
+#                 ret, piece_thresh = cv2.threshold(piece_gray, 0, 254, 0)
+#                 kernel = np.ones((3, 3), np.uint8)
+#                 dilate = cv2.dilate(piece_thresh, kernel, iterations=1)
+#                 erosion = cv2.erode(piece_thresh, kernel, iterations=1)
+#                 cnt = cv2.bitwise_xor(erosion, dilate, mask=None)
+#                 thres_n = 80
+#                 lines = cv2.HoughLines(cnt, 1, np.pi / 180, threshold=thres_n)
+#                 _, piece_thresh = cv2.threshold(piece_gray, 0, 254, 0)
+#                 # kernel = np.ones((3, 3), np.uint8)
+#                 # dilate = cv2.dilate(piece_thresh, kernel, iterations=1)
+#                 # erosion = cv2.erode(piece_thresh, kernel, iterations=1)
+#                 # cnt = cv2.bitwise_xor(erosion, dilate, mask=None)
+#
+#                 contour_img = np.zeros_like(self.image)
+#                 cv2.drawContours(contour_img, contours, p, (255, 255, 255), thickness=cv2.FILLED)
+#                 gray = cv2.cvtColor(contour_img, cv2.COLOR_BGR2GRAY)
+#
+#                 # blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+#                 cnt = cv2.Canny(gray, 50, 150, apertureSize=3)
+#                 # cv2.imshow('test', cnt)
+#                 # cv2.waitKey(0)
+#                 # cv2.destroyAllWindows()
+#
+#                 # print(piece.shape)
+#                 thres_n = 25
+#                 min_length = 25
+#                 maxLineGap = 10
+#                 lines = cv2.HoughLinesP(cnt, 1, np.pi / 180, threshold=thres_n, minLineLength=min_length, maxLineGap=maxLineGap)
+#                 angles = []
+#                 while lines is None and thres_n >= 20:
+#                     thres_n -= 5
+#                     lines = cv2.HoughLines(cnt, 1, np.pi / 180, threshold=thres_n)
+#                 print(f'threshold value: {thres_n}')
+#                     min_length -= 5
+#                     lines = cv2.HoughLinesP(cnt, 1, np.pi / 180, threshold=thres_n, minLineLength=min_length, maxLineGap=maxLineGap)
+#                     print("test")
+#                 # print(f'threshold value: {thres_n}')
+#                 if lines is not None:
+#                     for line in lines:
+#                         rho, theta = line[0]
+#                         angle = np.degrees(theta)
+#                         x1, y1, x2, y2 = line[0]
+#                         rico = (y2 - y1) / (x2 - x1)
+#                         angle = math.degrees(math.atan(rico))
+#                         if 0 <= angle <= 90:
+#                             angles.append(angle)
+#                     if len(angles) > 1:
+#                         # Compute the median angle
+#                         median_angle = np.median(angles)
+#                         angle_to_rotate = np.mean(angles)
+#                         print(angle_to_rotate)
+#
+#                         # Calculate the rotation angle
+#                         rotation_angle = (90.0 - median_angle)
+#                         print(rotation_angle)
+#                         rotation_angle = (90.0 - angle_to_rotate)
+#                         # print(rotation_angle)
+#
+#                         piece = imutils.rotate_bound(piece, rotation_angle)
+#                     temp_pieces[p] = piece
+#
+#
+# @@ -175,6 +196,7 @@ class Puzzle:
+#         else:
+#             cv2.imshow(f'Puzzle {self.rows}x{self.columns} {self.type}', img)
+#         cv2.waitKey(delay)
+#         cv2.destroyAllWindows()

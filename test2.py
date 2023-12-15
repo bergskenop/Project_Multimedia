@@ -7,9 +7,9 @@ import os
 # PYTHON SCRIPT OM GEPASTE PARAMETERS VOOR HET VINDEN VAN DE HOEKEN TE PROBEREN!!
 
 
-# path = filedialog.askopenfilename(initialdir="*/", title="Select image",
-#                                   filetypes=(("Images", "*.png*"), ("all files", "*.*")))
-path = 'data/Jigsaw_shuffled/jigsaw_shuffled_5x5_01.png'
+path = filedialog.askopenfilename(initialdir="*/", title="Select image",
+                                  filetypes=(("Images", "*.png*"), ("all files", "*.*")))
+# path = 'data/Jigsaw_shuffled/jigsaw_shuffled_5x5_01.png'
 
 image = cv2.imread(path)
 
