@@ -44,13 +44,7 @@ def identify_and_place_corners(pieces, piece_dim, puzzle_dim):
 
 
 # 5x5_01 en 5x5_03 en 5x5_06 zullen nooit werken omdat hun hoeken slecht gedetecteerd worden,
-# verlopig werken 4x4_06 en 5x5_08 niet bij shuffled en 4x4_00, 4x4_01, 4x4_03, 4x4_06 en 5x5_08 niet bij rotated !!!
-# Dit kan opgelost worden door meer logica!!, door bv te kijken naar de rand boven het puzzelstuk vanaf rij 2,
-# maar soms komt dit zelfs ook overeen zoals in shuffled 4x4_00, wat dan? Terugkeren nadat een fout ontdekt is?
-# De volgorde van de puzzelstukken door elkaar gooien nadat een fout ontdektis.....?
-# Matching is zogezegd gelukt bij 5x5_04 rotated, maar als we kijken naar de afbeelding zien we dat dit toch niet klopt,
-# soms heel moeilijk te zien bij histogram matching...
-# Dit kan mischien wel opgelost worden door de eerder beschreven logica toe te voegen
+# verlopig werken 5x5_00 niet bij shuffled en 4x4_00, 5x5_00 en 5x5_08 niet bij rotated !!!
 def match(pieces, puzzle_dim):
     rows, columns, depth = puzzle_dim  # rows en columns kan nog omgekeerd staan, dit controleren we later
 
@@ -192,7 +186,9 @@ def match(pieces, puzzle_dim):
                                       (rij != (rows - 1) or kolom != 0)) or
                                      (best_piece.get_edges()[1].get_type() == 'straight' and
                                       best_piece.get_edges()[2].get_type() == 'straight' and
-                                      (rij != (rows - 1) or kolom != (columns - 1))))):
+                                      (rij != (rows - 1) or kolom != (columns - 1))) or
+                                     (rij != 0 and pieces_solved[(number+1) - columns].get_edges()[1].get_type() ==
+                                      best_piece.get_edges()[3].get_type()))):
                 # Terugzetten naar de originele toestand zoals ze in pieces_copy staan
                 best_piece.rotate(360 - rotate_angle)
                 lijst_van_index_foute_pieces_en_randen.append((pieces_copy.index(best_piece), best_piece_edge_number))
