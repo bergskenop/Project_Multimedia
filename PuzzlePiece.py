@@ -77,8 +77,8 @@ class PuzzlePiece:
         for i, edge in enumerate(self.edges):
             edge.set_type(i, width, height)
             edge.calculate_histogram(image)
-            edge.print_edge()
-        print("-----------------------------")
+        #     edge.print_edge()
+        # print("-----------------------------")
 
     def rotate(self, angle):
         self.piece = imutils.rotate_bound(self.piece, angle)

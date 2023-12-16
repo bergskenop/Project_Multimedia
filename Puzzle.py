@@ -1,6 +1,7 @@
 from PuzzlePiece import *
 import re
 from helper import *
+import random
 
 
 # Logica achter klassenverdeling
@@ -50,6 +51,8 @@ class Puzzle:
         contours2 = sorted(contours2, key=cv2.contourArea, reverse=True)
         self.contours = contours2[:self.size]
 
+    # Is corners vinden door lijnen te trekken met de gevonden angle zoals bij
+    # scrambled2rotated en de 4 doorsnedes te nemen geen optie??????
     def set_puzzle_pieces(self, comment=False):
         for n, contour in enumerate(self.contours):
             contour_img = np.zeros_like(self.image)
@@ -167,7 +170,20 @@ class Puzzle:
         self.show(rotated_puzzle, delay=0)
 
     def match(self):
-        match(self.puzzle_pieces, (self.rows, self.columns, 3))
+        # Als de logica een error geeft plaatsen we de stukken in een andere volgorde om dan hopelijk een goed
+        # resultaat te bekomen, we doen dit wel maar een beperkt aantal keer anders zou het in een
+        # oneindige while loop kunnen geraken
+        # Nu zal het programma blijven lopen nadat we uit de while zijn, dit is niet de bedoeling
+        teller = 0
+        isGelukt = False
+        while not isGelukt and teller < 10:
+            try:
+                match(self.puzzle_pieces, (self.rows, self.columns, 3))
+                isGelukt = True
+            except TypeError as e:
+                print("ERROR")
+                random.shuffle(self.puzzle_pieces)
+                teller += 1
 
     def show(self, img=None, delay=0):
         if img is None:
@@ -175,6 +191,7 @@ class Puzzle:
         else:
             cv2.imshow(f'Puzzle {self.rows}x{self.columns} {self.type}', img)
         cv2.waitKey(delay)
+        cv2.destroyAllWindows()
 
     def draw_contours(self):
         img_contours = np.zeros_like(self.image)

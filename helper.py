@@ -1,5 +1,4 @@
 import cv2
-import matplotlib.pyplot as plt
 import numpy as np
 
 
@@ -46,11 +45,15 @@ def identify_and_place_corners(pieces, piece_dim, puzzle_dim):
 
 # 5x5_01 en 5x5_03 en 5x5_06 zullen nooit werken omdat hun hoeken slecht gedetecteerd worden,
 # verlopig werken 4x4_06 en 5x5_08 niet bij shuffled en 4x4_00, 4x4_01, 4x4_03, 4x4_06 en 5x5_08 niet bij rotated !!!
-# Dit kan opgelost worden door meer logica, door bv te kijken naar de rand boven het puzzelstuk vanaf rij 2,
+# Dit kan opgelost worden door meer logica!!, door bv te kijken naar de rand boven het puzzelstuk vanaf rij 2,
 # maar soms komt dit zelfs ook overeen zoals in shuffled 4x4_00, wat dan? Terugkeren nadat een fout ontdekt is?
 # De volgorde van de puzzelstukken door elkaar gooien nadat een fout ontdektis.....?
+# Matching is zogezegd gelukt bij 5x5_04 rotated, maar als we kijken naar de afbeelding zien we dat dit toch niet klopt,
+# soms heel moeilijk te zien bij histogram matching...
+# Dit kan mischien wel opgelost worden door de eerder beschreven logica toe te voegen
 def match(pieces, puzzle_dim):
     rows, columns, depth = puzzle_dim  # rows en columns kan nog omgekeerd staan, dit controleren we later
+
     # Begin puzzelstuk zoeken door het eerste puzzelstuk met 2 rechte lijnen te vinden en dit te draaien tot het
     # hoekpunt linksboven is zodat we steeds van daaruit vertrekken bij het matchen van puzzelstukken
     i = 0
@@ -70,7 +73,7 @@ def match(pieces, puzzle_dim):
         else:
             i += 1
     # i heeft de index van het beginpuzzelstuk
-    pieces_copy = pieces
+    pieces_copy = pieces.copy()
     pieces_solved = [pieces[i]]
     pieces_copy.remove(pieces[i])
 
@@ -78,7 +81,7 @@ def match(pieces, puzzle_dim):
     grootste_dim = max(rows, columns)
     kleinste_dim = min(rows, columns)
     rij = 0
-    kolom = 0
+
     for number in range(rows * columns - 1):
         kolom = (number + 1) % columns
         newLine = False
@@ -176,17 +179,24 @@ def match(pieces, puzzle_dim):
             # Is niet echt nodig want 2x3 doet hij steeds goed en heeft hiervoor dus geen extra logica nodig,
             # alles wat hier in deze if staat van logica is eigenlijk pas van toepassing vanaf 3x3
             if (rows == columns and ((rij == 0 and not best_piece.get_edges()[3].get_type() == 'straight') or
-                    (rij == (rows - 1) and not best_piece.get_edges()[1].get_type() == 'straight') or
-                    (kolom == 0 and not best_piece.get_edges()[0].get_type() == 'straight') or
-                    (kolom == (columns - 1) and not best_piece.get_edges()[2].get_type() == 'straight') or
-                    (heeft_rechte_rand and rij != 0 and rij != (rows - 1) and kolom != 0 and kolom != (columns - 1)) or
-                    (best_piece.get_edges()[3].get_type() == 'straight' and best_piece.get_edges()[2].get_type() == 'straight' and (rij != 0 or kolom != (columns - 1))) or
-                    (best_piece.get_edges()[0].get_type() == 'straight' and best_piece.get_edges()[1].get_type() == 'straight' and (rij != (rows - 1) or kolom != 0)) or
-                    (best_piece.get_edges()[1].get_type() == 'straight' and best_piece.get_edges()[2].get_type() == 'straight' and (rij != (rows - 1) or kolom != (columns - 1))))):
+                                     (rij == (rows - 1) and not best_piece.get_edges()[1].get_type() == 'straight') or
+                                     (kolom == 0 and not best_piece.get_edges()[0].get_type() == 'straight') or
+                                     (kolom == (columns - 1) and not best_piece.get_edges()[2].get_type() == 'straight') or
+                                     (heeft_rechte_rand and rij != 0 and rij != (rows - 1)
+                                      and kolom != 0 and kolom != (columns - 1)) or
+                                     (best_piece.get_edges()[3].get_type() == 'straight' and
+                                      best_piece.get_edges()[2].get_type() == 'straight' and
+                                      (rij != 0 or kolom != (columns - 1))) or
+                                     (best_piece.get_edges()[0].get_type() == 'straight' and
+                                      best_piece.get_edges()[1].get_type() == 'straight' and
+                                      (rij != (rows - 1) or kolom != 0)) or
+                                     (best_piece.get_edges()[1].get_type() == 'straight' and
+                                      best_piece.get_edges()[2].get_type() == 'straight' and
+                                      (rij != (rows - 1) or kolom != (columns - 1))))):
                 # Terugzetten naar de originele toestand zoals ze in pieces_copy staan
                 best_piece.rotate(360 - rotate_angle)
                 lijst_van_index_foute_pieces_en_randen.append((pieces_copy.index(best_piece), best_piece_edge_number))
-                print(f"logica niet ok => puzzelstuk: {pieces_copy.index(best_piece)} en rand {best_piece_edge_number}")
+                print(f"logica fout => puzzelstuk: {pieces_copy.index(best_piece)} en rand {best_piece_edge_number}")
                 best_piece = None
                 best_piece_edge_number = None
                 best_match_value1 = 100000
@@ -196,10 +206,8 @@ def match(pieces, puzzle_dim):
             else:
                 logicIsOk = True
 
-        print(len(pieces_copy))
         pieces_solved.append(best_piece)
         pieces_copy.remove(best_piece)
-        print(len(pieces_copy))
     print(f"Edge 0 is van type: {pieces_solved[len(pieces_solved) - 1].get_edges()[0].get_type()}, en lengte: {pieces_solved[len(pieces_solved) - 1].get_edges()[0].get_lengte()}")
     print(f"Edge 1 is van type: {pieces_solved[len(pieces_solved) - 1].get_edges()[1].get_type()}, en lengte: {pieces_solved[len(pieces_solved) - 1].get_edges()[1].get_lengte()}")
     print(f"Edge 2 is van type: {pieces_solved[len(pieces_solved) - 1].get_edges()[2].get_type()}, en lengte: {pieces_solved[len(pieces_solved) - 1].get_edges()[2].get_lengte()}")
