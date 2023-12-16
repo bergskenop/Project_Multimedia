@@ -182,10 +182,10 @@ class Puzzle:
         isGelukt = False
         while not isGelukt and teller < 10:
             try:
-                self.solved_image_pieces = match(self.puzzle_pieces, (self.rows, self.columns, 3))
+                match(self.puzzle_pieces, (self.rows, self.columns, 3))
                 isGelukt = True
             except TypeError as e:
-                print("ERROR")
+                print(e)
                 random.shuffle(self.puzzle_pieces)
                 teller += 1
                 isGelukt = True
@@ -219,7 +219,7 @@ class Puzzle:
 
             min_y += solved_height
         cv2.imshow('solved_image', solved_image)
-        cv2.waitKey(0)
+        cv2.waitKey(2)
         cv2.destroyAllWindows()
 
     def solve_puzzle(self):

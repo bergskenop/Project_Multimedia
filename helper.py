@@ -166,12 +166,12 @@ def match(pieces, puzzle_dim):
             # de index van de rand geeft aan hoeveel graden het puzzelstuk gedraaid moet worden.
             if newLine:
                 rotate_angle = 360 - (3 - best_piece_edge_number) * 90
-                print(f"Rotate =================> {rotate_angle}")
+                # print(f"Rotate =================> {rotate_angle}")
                 best_piece.rotate(rotate_angle)
 
             else:
                 rotate_angle = best_piece_edge_number * 90
-                print(f"Rotate =================> {rotate_angle}")
+                # print(f"Rotate =================> {rotate_angle}")
                 best_piece.rotate(rotate_angle)
 
             # Als het beste stuk gevonden is kijken of het mogelijk is a.d.h.v. logica dat randen aan de buitenkant
@@ -231,8 +231,62 @@ def match(pieces, puzzle_dim):
     #     cv2.waitKey(0)
     #     cv2.destroyAllWindows()
 
+    solved_width = 0
+    solved_height = 0
     pieces_solved = np.array(pieces_solved).reshape(rows, columns)
-    return pieces_solved
+    pieces_solved_cpy = pieces_solved.copy()
+
+    # print(pieces_solved.shape)
+    for row in range(rows):
+        for col in range(columns):
+            if pieces_solved[row][col].get_piece_height() > solved_height:
+                solved_height = pieces_solved[row][col].get_piece_height()
+            if pieces_solved[row][col].get_piece_width() > solved_width:
+                solved_width = pieces_solved[row][col].get_piece_width()
+
+    solved_image = np.zeros([solved_height * rows, solved_width * columns, 3], dtype=np.uint8)
+    min_y = 0
+    max_y = 0
+    # print(f'rows: {rows}, columns: {columns}')
+    for row, row_pieces in enumerate(pieces_solved):
+        min_x = 0
+        max_x = 0
+
+        for column, piece in enumerate(row_pieces):
+            max_x += piece.get_piece_width()
+            max_y = min_y + piece.get_piece_height()
+            # cv2.imshow('next piece', piece.get_piece())
+            # cv2.waitKey(0)
+            # print(
+            #     f'position: ({row}, {column}) -> {piece.get_height()} by {piece.get_width()} and {piece.get_piece_height()} by {piece.get_piece_width()} ')
+
+            temp_img = np.zeros_like(solved_image)
+            temp_img[min_y:max_y, min_x:max_x, :] = piece.get_piece()
+            solved_image = cv2.bitwise_or(solved_image, temp_img, mask=None)
+            min_x = max_x
+
+        min_y += solved_height
+    # overlap(solved_image)
+    cv2.imshow('solved_image', solved_image)
+    cv2.waitKey(25)
+    cv2.destroyAllWindows()
+
+
+def overlap(pieces):
+    solved_height = max(pieces.shape[0], axis=0)
+    print(solved_height)
+    solved_width = 0
+    rows, columns, _ = pieces.shape
+    for row in range(rows):
+        for col in range(columns):
+            if pieces[row][col].get_piece_height() > solved_height:
+                solved_height = pieces[row][col].get_piece_height()
+            if pieces[row][col].get_piece_width() > solved_width:
+                solved_width = pieces[row][col].get_piece_width()
+    solved_image = np.zeros([solved_height * rows, solved_width * columns, 3], dtype=np.uint8)
+    cv2.imshow('pre-img', solved_image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 
 def match_histogram(hist_to_compare, hist_array):
