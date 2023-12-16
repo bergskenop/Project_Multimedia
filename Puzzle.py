@@ -83,9 +83,20 @@ class Puzzle:
             #     cv2.circle(temp_img, corner, 3, (0, 255, 255), -1)
             # self.show(temp_img)
 
-            volgorde = [3, 1, 0, 2]
-            for v in volgorde:
-                corners_in_correct_order.append(temp_corners[v])
+            # Hoekpunten in de juiste volgorde zetten lukt alleen bij rotated of shuffled
+            # volgorde = [3, 1, 0, 2]
+            # corners_in_correct_order = []
+            # for v in volgorde:
+            #     corners_in_correct_order.append(temp_corners[v])
+
+            # Robuustere manier voor het vinden van de volgorde van de hoeken, dit werkt ook voor scrambled
+            sorted_x = sorted(temp_corners, key=lambda x: x[0])
+            sorted_y = sorted(temp_corners, key=lambda x: x[1])
+            corners_in_correct_order.append(sorted(sorted_y[:2], key=lambda x: x[0])[0])
+            corners_in_correct_order.append(sorted(sorted_x[:2], key=lambda x: x[1])[1])
+            corners_in_correct_order.append(sorted(sorted_y[2:], key=lambda x: x[0])[1])
+            corners_in_correct_order.append(sorted(sorted_y[:2], key=lambda x: x[0])[1])
+
             contour = np.squeeze(contour)
             list_contours = list(zip(contour[:, 0], contour[:, 1]))
             puzzle_piece = PuzzlePiece(list_contours)
@@ -263,4 +274,4 @@ class Puzzle:
         for piece in self.puzzle_pieces:
             for corner in piece.corners:
                 cv2.circle(img_corners, corner, 3, (0, 255, 255), -1)
-                self.show(img_corners)
+        self.show(img_corners)
