@@ -75,10 +75,10 @@ class Puzzle:
                 temp_corners.append((x, y))
             corners_in_correct_order = []
 
-            temp_img = self.image.copy()
-            for corner in temp_corners:
-                cv2.circle(temp_img, corner, 3, (0, 255, 255), -1)
-            self.show(temp_img)
+            # temp_img = self.image.copy()
+            # for corner in temp_corners:
+            #     cv2.circle(temp_img, corner, 3, (0, 255, 255), -1)
+            # self.show(temp_img)
 
             volgorde = [3, 1, 0, 2]
             for v in volgorde:

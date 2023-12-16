@@ -100,22 +100,27 @@ def match(pieces, puzzle_dim):
         # i.p.v. de rechtse rand van het vorige puzzelstuk
         if kolom == 0:
             type_of_edge_to_match = pieces_solved[len(pieces_solved) - columns].get_edges()[1].get_type()
-            hist_of_edge_to_match = pieces_solved[len(pieces_solved) - columns].get_edges()[1].get_histogram()
+            hist_of_edge_to_match_above = pieces_solved[len(pieces_solved) - columns].get_edges()[1].get_histogram()
             lengte_of_edge_to_match = pieces_solved[len(pieces_solved) - columns].get_edges()[1].get_lengte()
+            hist_of_edge_to_match_right = None
             newLine = True
             rij += 1
             print(newLine)
         else:
             type_of_edge_to_match = pieces_solved[number].get_edges()[2].get_type().lower()
+            hist_of_edge_to_match_right = pieces_solved[number].get_edges()[2].get_histogram()
             lengte_of_edge_to_match = pieces_solved[number].get_edges()[2].get_lengte()
-            hist_of_edge_to_match = pieces_solved[number].get_edges()[2].get_histogram()
+            if rij >= 1:
+                hist_of_edge_to_match_above = pieces_solved[len(pieces_solved) - columns].get_edges()[1].get_histogram()
+            else:
+                hist_of_edge_to_match_above = None
 
         # cv2.imshow(f'piece {number}', pieces_solved[number].get_piece())
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
 
         print(f"lengte_of_edge_to_match => {lengte_of_edge_to_match}")
-        print(f"type_of_edge_to_match => {type_of_edge_to_match}")
+        print(f"type_of_edge_to_match above => {type_of_edge_to_match}")
         best_piece = None
         best_piece_edge_number = None
         best_match_value1 = 100000
@@ -134,7 +139,16 @@ def match(pieces, puzzle_dim):
                             (len(lijst_van_index_foute_pieces_en_randen) == 0 or not
                             any((t[0] == k and t[1] == n) for t in lijst_van_index_foute_pieces_en_randen))):
                         # method: 0 => correlation, 1 => chi-square, 2 => intersection en 3 => Bhattacharyya
-                        value1 = cv2.compareHist(hist_of_edge_to_match, edge.get_histogram(), method=3)
+                        if kolom == 0:
+                            value_above = cv2.compareHist(hist_of_edge_to_match_above, edge.get_histogram(), method=3)
+                            value1 = value_above
+                        elif rij == 0:
+                            value_right = cv2.compareHist(hist_of_edge_to_match_right, edge.get_histogram(), method=3)
+                            value1 = value_right
+                        else:
+                            value_right = cv2.compareHist(hist_of_edge_to_match_right, edge.get_histogram(), method=3)
+                            value_above = cv2.compareHist(hist_of_edge_to_match_above, piece.get_edges()[n - 1].get_histogram(), method=3)
+                            value1 = np.mean([value_right, value_above])
                         # value2 = cv2.compareHist(hist_of_edge_to_match, edge.get_histogram(), method=1)
                         # value3 = cv2.compareHist(hist_of_edge_to_match, edge.get_histogram(), method=0)
                         # value4 = cv2.compareHist(hist_of_edge_to_match, edge.get_histogram(), method=2)
@@ -252,9 +266,10 @@ def match(pieces, puzzle_dim):
 
         min_y += solved_height
     cv2.imshow('solved_image', solved_image)
-    cv2.waitKey(200)
-    overlap(solved_image)
-    # cv2.destroyAllWindows()
+    cv2.waitKey(0)
+    # overlap(solved_image)
+    cv2.destroyAllWindows()
+
 
 def overlap(pieces):
     solved_height = max(pieces.shape[0], axis=0)
