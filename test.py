@@ -78,29 +78,38 @@ for n, cont in enumerate(contours):
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     cnt = cv2.Canny(blurred, 50, 150, apertureSize=3)
 
-    cv2.imshow('thresh', cnt)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.imshow('thresh', cnt)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 
     detect_image = np.zeros_like(image)
     detect_image = cv2.cvtColor(detect_image, cv2.COLOR_BGR2GRAY)
     lines = cv2.HoughLinesP(cnt, 1, np.pi / 180, threshold=100, minLineLength=100, maxLineGap=25)
+    lines = sorted(lines, key=lambda line: line[0][1], reverse=True)[:4]
     angles = []
+    y_n = []
+    x_n = []
     for line in lines:
         x1, y1, x2, y2 = line[0]
         rico = (y2 - y1) / (x2 - x1)
         angle = math.degrees(math.atan(rico))
-        if 0 <= angle <= 90:
-            angles.append(angle)
+        print(angle)
         cv2.line(detect_image, (x1, y1), (x2, y2), (255, 255, 255), 1)
-    print(angles)
+        if y1 + 10 > y2 > y1 - 10:
+            y_n.append(y1)
+        if x1 + 10 > x2 > x1 - 10:
+            x_n.append(x1)
 
-    angle_to_rotate = np.mean(angles)
-    print(angle_to_rotate)
+    print(x_n, y_n)
 
+    corners = [(x_n[0], y_n[0]), (x_n[1], y_n[0]), (x_n[0], y_n[1]), (x_n[1], y_n[1])]
 
-    cv2.imshow('detect_image', detect_image)
-    cv2.waitKey(0)
+    # cv2.imshow('detect_image', detect_image)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+
+    for corner in corners:
+        cv2.circle(image, corner, 3, (0, 255, 0), -1)
 
     # intersect_image = np.zeros_like(image)
     # intersect_image = cv2.cvtColor(intersect_image, cv2.COLOR_BGR2GRAY)
@@ -129,9 +138,11 @@ for n, cont in enumerate(contours):
     # cv2.destroyAllWindows()
 
 # Display the result
+if image.shape[0] > 800 and image.shape[1] > 700:
+    image = cv2.resize(image, (int(image.shape[0] / 1.5), int(image.shape[1] / 1.5)))
 cv2.imshow('Hough Lines', image)
 cv2.waitKey(0)
-
+cv2.destroyAllWindows()
 
 
 

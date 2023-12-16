@@ -253,10 +253,10 @@ def match(pieces, puzzle_dim):
         for c, piece in enumerate(row_pieces):
             if ((piece.get_edges()[0].get_type() == "straight" and piece.get_edges()[2].get_type() == "outie") or
                 (piece.get_edges()[0].get_type() == "outie" and piece.get_edges()[2].get_type() == "straight")):
-                width_uitsteek = piece.get_piece_width() - piece.get_width() - 2
+                width_uitsteek = piece.get_piece_width() - piece.get_width() - 3
             if ((piece.get_edges()[1].get_type() == "straight" and piece.get_edges()[3].get_type() == "outie") or
                 (piece.get_edges()[1].get_type() == "outie" and piece.get_edges()[3].get_type() == "straight")):
-                height_uitsteek = piece.get_piece_height() - piece.get_height() - 2
+                height_uitsteek = piece.get_piece_height() - piece.get_height() - 3
 
     min_y = 0
     max_x = 0
