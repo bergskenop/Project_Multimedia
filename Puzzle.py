@@ -1,5 +1,7 @@
 import os
 
+import numpy as np
+
 from PuzzlePiece import *
 import re
 from helper import *
@@ -25,6 +27,7 @@ class Puzzle:
         self.rows = 1  # Self expl
         self.columns = 1  # Self expl
         self.size = 1  # Hoeveelheid puzzelstukken rows*columns
+        self.solved_image_pieces = None
         self.solved_image = None  # Uiteindelijk resultaat komt hier terecht
 
     def initialise_puzzle(self):
@@ -139,7 +142,7 @@ class Puzzle:
                 lines = sorted(lines, key=lambda line: line[0][1], reverse=True)
                 piece_cpy = piece.copy()
                 rho, theta = lines[0][0]
-                angle = round(90 - np.degrees(theta),2)
+                angle = round(90 - np.degrees(theta), 2)
                 print(f'interation {i} : {angle}')
                 rotate = imutils.rotate_bound(piece_cpy, angle)
                 temp_pieces[p] = rotate
@@ -179,15 +182,69 @@ class Puzzle:
         isGelukt = False
         while not isGelukt and teller < 10:
             try:
-                match(self.puzzle_pieces, (self.rows, self.columns, 3))
+                self.solved_image_pieces = match(self.puzzle_pieces, (self.rows, self.columns, 3))
                 isGelukt = True
             except TypeError as e:
                 print("ERROR")
                 random.shuffle(self.puzzle_pieces)
                 teller += 1
-                isGelukt=True
+                isGelukt = True
         if teller >= 10:
             raise Exception("Your error message here")
+
+    def solve_puzzle_black(self):
+        solved_width = 0
+        solved_height = 0
+
+        for row in range(self.rows):
+            for col in range(self.columns):
+                if self.solved_image_pieces[row][col].get_piece_height() > solved_height:
+                    solved_height = self.solved_image_pieces[row][col].get_piece_height()
+                if self.solved_image_pieces[row][col].get_piece_width() > solved_width:
+                    solved_width = self.solved_image_pieces[row][col].get_piece_width()
+        solved_image = np.zeros([solved_height * self.rows, solved_width * self.columns, 3], dtype=np.uint8)
+        min_y = 0
+        max_y = 0
+        for row, row_pieces in enumerate(self.solved_image_pieces):
+            min_x = 0
+            max_x = 0
+
+            for column, piece in enumerate(row_pieces):
+                max_x += piece.get_piece_width()
+                max_y = min_y + piece.get_piece_height()
+                temp_img = np.zeros_like(solved_image)
+                temp_img[min_y:max_y, min_x:max_x, :] = piece.get_piece()
+                solved_image = cv2.bitwise_or(solved_image, temp_img, mask=None)
+                min_x = max_x
+
+            min_y += solved_height
+        cv2.imshow('solved_image', solved_image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
+    def solve_puzzle(self):
+        solved_width = 0
+        solved_height = 0
+
+        for row in range(self.rows):
+            for col in range(self.columns):
+                if self.solved_image_pieces[row][col].get_piece_height() > solved_height:
+                    solved_height = self.solved_image_pieces[row][col].get_piece_height()
+                if self.solved_image_pieces[row][col].get_piece_width() > solved_width:
+                    solved_width = self.solved_image_pieces[row][col].get_piece_width()
+        solved_image = np.zeros([solved_height * self.rows, solved_width * self.columns, 3], dtype=np.uint8)
+
+        # self.show(img_template)
+        print(self.solved_image_pieces.shape)
+        min_x, max_x, min_y, max_y = 0, 0, 0, 0
+        for row, pieces_row in enumerate(self.solved_image_pieces):
+            min_x = 0
+            for col, piece in enumerate(pieces_row):
+                temp_img = np.zeros_like(solved_image)
+                temp_img[min_y:piece.get_piece_height(), min_x:min_x+piece.get_piece_width(), :] = piece.get_piece()
+                solved_image = cv2.bitwise_or(solved_image, temp_img, mask=None)
+                min_x += piece.get_edges()[2].hoeken[1][0]
+                self.show(solved_image)
 
     def show(self, img=None, delay=0):
         if img is None:

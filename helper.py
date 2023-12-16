@@ -71,7 +71,7 @@ def match(pieces, puzzle_dim):
     pieces_solved = [pieces[i]]
     pieces_copy.remove(pieces[i])
 
-    print(f"rows = {rows}, columns = {columns}")
+    # print(f"rows = {rows}, columns = {columns}")
     grootste_dim = max(rows, columns)
     kleinste_dim = min(rows, columns)
     rij = 0
@@ -79,10 +79,10 @@ def match(pieces, puzzle_dim):
     for number in range(rows * columns - 1):
         kolom = (number + 1) % columns
         newLine = False
-        print(f"Edge 0 is van type: {pieces_solved[number].get_edges()[0].get_type()}, en lengte: {pieces_solved[number].get_edges()[0].get_lengte()}")
-        print(f"Edge 1 is van type: {pieces_solved[number].get_edges()[1].get_type()}, en lengte: {pieces_solved[number].get_edges()[1].get_lengte()}")
-        print(f"Edge 2 is van type: {pieces_solved[number].get_edges()[2].get_type()}, en lengte: {pieces_solved[number].get_edges()[2].get_lengte()}")
-        print(f"Edge 3 is van type: {pieces_solved[number].get_edges()[3].get_type()}, en lengte: {pieces_solved[number].get_edges()[3].get_lengte()}")
+        # print(f"Edge 0 is van type: {pieces_solved[number].get_edges()[0].get_type()}, en lengte: {pieces_solved[number].get_edges()[0].get_lengte()}")
+        # print(f"Edge 1 is van type: {pieces_solved[number].get_edges()[1].get_type()}, en lengte: {pieces_solved[number].get_edges()[1].get_lengte()}")
+        # print(f"Edge 2 is van type: {pieces_solved[number].get_edges()[2].get_type()}, en lengte: {pieces_solved[number].get_edges()[2].get_lengte()}")
+        # print(f"Edge 3 is van type: {pieces_solved[number].get_edges()[3].get_type()}, en lengte: {pieces_solved[number].get_edges()[3].get_lengte()}")
         # Geef kolommen en rijen de gepaste waarde,
         # dit kon in het begin omgewisseld zijn naargelang de plaatsing van het eerste puzzelstuk
         if grootste_dim != kleinste_dim and number == 1:
@@ -91,11 +91,11 @@ def match(pieces, puzzle_dim):
                 columns = kleinste_dim
                 rows = grootste_dim
                 kolom = (number + 1) % columns
-                print(f"rows = {rows}, columns = {columns}")
+                # print(f"rows = {rows}, columns = {columns}")
             else:
                 columns = grootste_dim
                 rows = kleinste_dim
-                print(f"rows = {rows}, columns = {columns}")
+                # print(f"rows = {rows}, columns = {columns}")
         # Als we op het einde van een rij zijn, kijk dan naar de onderste rand van het eerste puzzelstuk van de rij
         # i.p.v. de rechtse rand van het vorige puzzelstuk
         if kolom == 0:
@@ -105,7 +105,7 @@ def match(pieces, puzzle_dim):
             hist_of_edge_to_match_right = None
             newLine = True
             rij += 1
-            print(newLine)
+            # print(newLine)
         else:
             type_of_edge_to_match = pieces_solved[number].get_edges()[2].get_type().lower()
             hist_of_edge_to_match_right = pieces_solved[number].get_edges()[2].get_histogram()
@@ -119,8 +119,8 @@ def match(pieces, puzzle_dim):
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
 
-        print(f"lengte_of_edge_to_match => {lengte_of_edge_to_match}")
-        print(f"type_of_edge_to_match above => {type_of_edge_to_match}")
+        # print(f"lengte_of_edge_to_match => {lengte_of_edge_to_match}")
+        # print(f"type_of_edge_to_match above => {type_of_edge_to_match}")
         best_piece = None
         best_piece_edge_number = None
         best_match_value1 = 100000
@@ -218,10 +218,10 @@ def match(pieces, puzzle_dim):
 
         pieces_solved.append(best_piece)
         pieces_copy.remove(best_piece)
-    print(f"Edge 0 is van type: {pieces_solved[len(pieces_solved) - 1].get_edges()[0].get_type()}, en lengte: {pieces_solved[len(pieces_solved) - 1].get_edges()[0].get_lengte()}")
-    print(f"Edge 1 is van type: {pieces_solved[len(pieces_solved) - 1].get_edges()[1].get_type()}, en lengte: {pieces_solved[len(pieces_solved) - 1].get_edges()[1].get_lengte()}")
-    print(f"Edge 2 is van type: {pieces_solved[len(pieces_solved) - 1].get_edges()[2].get_type()}, en lengte: {pieces_solved[len(pieces_solved) - 1].get_edges()[2].get_lengte()}")
-    print(f"Edge 3 is van type: {pieces_solved[len(pieces_solved) - 1].get_edges()[3].get_type()}, en lengte: {pieces_solved[len(pieces_solved) - 1].get_edges()[3].get_lengte()}")
+    # print(f"Edge 0 is van type: {pieces_solved[len(pieces_solved) - 1].get_edges()[0].get_type()}, en lengte: {pieces_solved[len(pieces_solved) - 1].get_edges()[0].get_lengte()}")
+    # print(f"Edge 1 is van type: {pieces_solved[len(pieces_solved) - 1].get_edges()[1].get_type()}, en lengte: {pieces_solved[len(pieces_solved) - 1].get_edges()[1].get_lengte()}")
+    # print(f"Edge 2 is van type: {pieces_solved[len(pieces_solved) - 1].get_edges()[2].get_type()}, en lengte: {pieces_solved[len(pieces_solved) - 1].get_edges()[2].get_lengte()}")
+    # print(f"Edge 3 is van type: {pieces_solved[len(pieces_solved) - 1].get_edges()[3].get_type()}, en lengte: {pieces_solved[len(pieces_solved) - 1].get_edges()[3].get_lengte()}")
     # cv2.imshow('laatste piece', pieces_solved[len(pieces_solved)-1].get_piece())
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
@@ -231,52 +231,8 @@ def match(pieces, puzzle_dim):
     #     cv2.waitKey(0)
     #     cv2.destroyAllWindows()
 
-    solved_width = 0
-    solved_height = 0
     pieces_solved = np.array(pieces_solved).reshape(rows, columns)
-
-    # print(pieces_solved.shape)
-    for row in range(rows):
-        for col in range(columns):
-            if pieces_solved[row][col].get_piece_height() > solved_height:
-                solved_height = pieces_solved[row][col].get_piece_height()
-            if pieces_solved[row][col].get_piece_width() > solved_width:
-                solved_width = pieces_solved[row][col].get_piece_width()
-
-    solved_image = np.zeros([solved_height * rows, solved_width * columns, 3], dtype=np.uint8)
-    min_y = 0
-    max_y = 0
-    # print(f'rows: {rows}, columns: {columns}')
-    for row, row_pieces in enumerate(pieces_solved):
-        min_x = 0
-        max_x = 0
-
-        for column, piece in enumerate(row_pieces):
-            max_x += piece.get_piece_width()
-            max_y = min_y + piece.get_piece_height()
-            # cv2.imshow('next piece', piece.get_piece())
-            # cv2.waitKey(0)
-            # print(
-            #     f'position: ({row}, {column}) -> {piece.get_height()} by {piece.get_width()} and {piece.get_piece_height()} by {piece.get_piece_width()} ')
-
-            temp_img = np.zeros_like(solved_image)
-            temp_img[min_y:max_y, min_x:max_x, :] = piece.get_piece()
-            solved_image = cv2.bitwise_or(solved_image, temp_img, mask=None)
-            min_x = max_x
-
-        min_y += solved_height
-    cv2.imshow('solved_image', solved_image)
-    cv2.waitKey(0)
-    # overlap(solved_image)
-    cv2.destroyAllWindows()
-
-
-def overlap(pieces):
-    solved_height = max(pieces.shape[0], axis=0)
-    print(solved_height)
-    solved_width = 0
-    rows, columns, _ = pieces.shape
-    solved_image = np.zeros([solved_height * rows, solved_width * columns, 3], dtype=np.uint8)
+    return pieces_solved
 
 
 def match_histogram(hist_to_compare, hist_array):
