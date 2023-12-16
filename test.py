@@ -82,25 +82,57 @@ for n, cont in enumerate(contours):
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
 
+    contour = np.squeeze(cont)
+    points = list(zip(contour[:, 0], contour[:, 1]))
+
+    min_x = min(points, key=lambda x: x[0])[0]
+    max_x = max(points, key=lambda x: x[0])[0]
+    min_y = min(points, key=lambda x: x[1])[1]
+    max_y = max(points, key=lambda x: x[1])[1]
+
+    sh = [np.abs(min_y - max_y), np.abs(min_x - max_x)]
+    print(sh)
+
     detect_image = np.zeros_like(image)
     detect_image = cv2.cvtColor(detect_image, cv2.COLOR_BGR2GRAY)
-    lines = cv2.HoughLinesP(cnt, 1, np.pi / 180, threshold=100, minLineLength=100, maxLineGap=25)
-    lines = sorted(lines, key=lambda line: line[0][1], reverse=True)[:4]
-    angles = []
+    lines = []
+    parameter_te_veranderen = 1
+    treshold = 150
+    minLength = 150
+    maxLineGap = 25
+    break_outer = False
     y_n = []
     x_n = []
-    for line in lines:
-        x1, y1, x2, y2 = line[0]
-        rico = (y2 - y1) / (x2 - x1)
-        angle = math.degrees(math.atan(rico))
-        print(angle)
-        cv2.line(detect_image, (x1, y1), (x2, y2), (255, 255, 255), 1)
-        if y1 + 10 > y2 > y1 - 10:
-            y_n.append(y1)
-        if x1 + 10 > x2 > x1 - 10:
-            x_n.append(x1)
+    for i in range(50, 0, -2):
+        for j in range(50, 0, -2):
+            for k in range(25, 0, -2):
+                lines = cv2.HoughLinesP(cnt, 1, np.pi / 180, threshold=i, minLineLength=j, maxLineGap=k)
+                if lines is not None and len(lines) >= 4:
+                    lines = sorted(lines, key=lambda line: line[0][1], reverse=True)[:4]
 
-    print(x_n, y_n)
+                    angles = []
+                    for line in lines:
+                        x1, y1, x2, y2 = line[0]
+                        rico = (y2 - y1) / (x2 - x1)
+                        angle = math.degrees(math.atan(rico))
+                        cv2.line(detect_image, (x1, y1), (x2, y2), (255, 255, 255), 1)
+                        if y1 + 10 > y2 > y1 - 10:
+                            y_n.append(y1)
+                        if x1 + 10 > x2 > x1 - 10:
+                            x_n.append(x1)
+
+                    if len(x_n) == 2 and len(y_n) == 2:
+                        break_outer = True
+                        break  # This will break out of the inner loop
+                    else:
+                        y_n = []
+                        x_n = []
+            if break_outer:
+                break
+        if break_outer:
+            break
+
+    # print(x_n, y_n)
 
     corners = [(x_n[0], y_n[0]), (x_n[1], y_n[0]), (x_n[0], y_n[1]), (x_n[1], y_n[1])]
 

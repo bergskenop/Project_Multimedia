@@ -48,7 +48,7 @@ def identify_and_place_corners(pieces, puzzle_dim):
 
 # 5x5_01 en 5x5_03 en 5x5_06 zullen nooit werken omdat hun hoeken slecht gedetecteerd worden,
 # verlopig werken 5x5_00 niet bij shuffled en 4x4_00, 5x5_00 en 5x5_08 niet bij rotated !!!
-def match(pieces, puzzle_dim):
+def match(pieces, puzzle_dim, nummer, type_stuk):
     rows, columns, depth = puzzle_dim  # rows en columns kan nog omgekeerd staan, dit controleren we later
 
     # Begin puzzelstuk zoeken door het eerste puzzelstuk met 2 rechte lijnen te vinden en dit te draaien tot het
@@ -94,11 +94,11 @@ def match(pieces, puzzle_dim):
                 columns = kleinste_dim
                 rows = grootste_dim
                 kolom = (number + 1) % columns
-                # print(f"rows = {rows}, columns = {columns}")
+                print(f"rows = {rows}, columns = {columns}")
             else:
                 columns = grootste_dim
                 rows = kleinste_dim
-                # print(f"rows = {rows}, columns = {columns}")
+                print(f"rows = {rows}, columns = {columns}")
         # Als we op het einde van een rij zijn, kijk dan naar de onderste rand van het eerste puzzelstuk van de rij
         # i.p.v. de rechtse rand van het vorige puzzelstuk
         if kolom == 0:
@@ -155,10 +155,6 @@ def match(pieces, puzzle_dim):
                         # value2 = cv2.compareHist(hist_of_edge_to_match, edge.get_histogram(), method=1)
                         # value3 = cv2.compareHist(hist_of_edge_to_match, edge.get_histogram(), method=0)
                         # value4 = cv2.compareHist(hist_of_edge_to_match, edge.get_histogram(), method=2)
-                        # print(f"value => {value1}")
-                        # cv2.imshow(f'mogelijke best piece met rand {n}', piece.get_piece())
-                        # cv2.waitKey(0)
-                        # cv2.destroyAllWindows()
                         if best_match_value1 > value1:  # and best_match_value2 > value2 and best_match_value3 < value3 and best_match_value4 < value4:
                             best_match_value1 = value1
                             # best_match_value2 = value2
@@ -209,7 +205,7 @@ def match(pieces, puzzle_dim):
                 # Terugzetten naar de originele toestand zoals ze in pieces_copy staan
                 best_piece.rotate(360 - rotate_angle)
                 lijst_van_index_foute_pieces_en_randen.append((pieces_copy.index(best_piece), best_piece_edge_number))
-                print(f"logica fout => puzzelstuk: {pieces_copy.index(best_piece)} en rand {best_piece_edge_number}")
+                # print(f"logica fout => puzzelstuk: {pieces_copy.index(best_piece)} en rand {best_piece_edge_number}")
                 best_piece = None
                 best_piece_edge_number = None
                 best_match_value1 = 100000
@@ -229,23 +225,9 @@ def match(pieces, puzzle_dim):
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
 
-    # for n, piece in enumerate(pieces_solved):
-    #     cv2.imshow(f"piece {n+1}", piece.get_piece())
-    #     cv2.waitKey(0)
-    #     cv2.destroyAllWindows()
-
-    solved_width = 0
-    solved_height = 0
     pieces_solved = np.array(pieces_solved).reshape(rows, columns)
 
-    for row in range(rows):
-        for col in range(columns):
-            if pieces_solved[row][col].get_piece_height() > solved_height:
-                solved_height = pieces_solved[row][col].get_piece_height()
-            if pieces_solved[row][col].get_piece_width() > solved_width:
-                solved_width = pieces_solved[row][col].get_piece_width()
-
-    solved_image = np.zeros([solved_height * rows, solved_width * columns, 3], dtype=np.uint8)
+    solved_image = np.zeros([pieces_solved[0][0].get_height() * rows + 10, pieces_solved[0][0].get_width() * columns + 10, 3], dtype=np.uint8)
 
     width_uitsteek = 0
     height_uitsteek = 0
@@ -253,10 +235,17 @@ def match(pieces, puzzle_dim):
         for c, piece in enumerate(row_pieces):
             if ((piece.get_edges()[0].get_type() == "straight" and piece.get_edges()[2].get_type() == "outie") or
                 (piece.get_edges()[0].get_type() == "outie" and piece.get_edges()[2].get_type() == "straight")):
-                width_uitsteek = piece.get_piece_width() - piece.get_width() - 3
+                width_uitsteek = piece.get_piece_width() - piece.get_width()
             if ((piece.get_edges()[1].get_type() == "straight" and piece.get_edges()[3].get_type() == "outie") or
                 (piece.get_edges()[1].get_type() == "outie" and piece.get_edges()[3].get_type() == "straight")):
-                height_uitsteek = piece.get_piece_height() - piece.get_height() - 3
+                height_uitsteek = piece.get_piece_height() - piece.get_height()
+    # Als het zo geen stuk heeft, kijk dan naar een stuk met 2 outie's en deel de lengte door 2
+    if width_uitsteek == 0:
+        for r, row_pieces in enumerate(pieces_solved):
+            for c, piece in enumerate(row_pieces):
+                if piece.get_edges()[0].get_type() == "outie" and piece.get_edges()[2].get_type() == "outie":
+                    width_uitsteek = (piece.get_piece_width() - piece.get_width())/2
+                    height_uitsteek = width_uitsteek
 
     min_y = 0
     max_x = 0
@@ -282,26 +271,31 @@ def match(pieces, puzzle_dim):
 
         totaal_y += pieces_solved[r][0].get_height()
 
-    cv2.imshow('solved_image', solved_image)
+    type_stuk_string = "SHUFFLED"
+    if type_stuk == 2:
+        type_stuk_string = "SCRAMBLED"
+    elif type_stuk == 3:
+        type_stuk_string = "ROTATED"
+    cv2.imshow(f'SOLVED {rows}x{columns}_0{nummer} {type_stuk_string}', solved_image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 
-def overlap(pieces):
-    solved_height = max(pieces.shape[0], axis=0)
-    print(solved_height)
-    solved_width = 0
-    rows, columns, _ = pieces.shape
-    for row in range(rows):
-        for col in range(columns):
-            if pieces[row][col].get_piece_height() > solved_height:
-                solved_height = pieces[row][col].get_piece_height()
-            if pieces[row][col].get_piece_width() > solved_width:
-                solved_width = pieces[row][col].get_piece_width()
-    solved_image = np.zeros([solved_height * rows, solved_width * columns, 3], dtype=np.uint8)
-    cv2.imshow('pre-img', solved_image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+# def overlap(pieces):
+#     solved_height = max(pieces.shape[0], axis=0)
+#     print(solved_height)
+#     solved_width = 0
+#     rows, columns, _ = pieces.shape
+#     for row in range(rows):
+#         for col in range(columns):
+#             if pieces[row][col].get_piece_height() > solved_height:
+#                 solved_height = pieces[row][col].get_piece_height()
+#             if pieces[row][col].get_piece_width() > solved_width:
+#                 solved_width = pieces[row][col].get_piece_width()
+#     solved_image = np.zeros([solved_height * rows, solved_width * columns, 3], dtype=np.uint8)
+#     cv2.imshow('pre-img', solved_image)
+#     cv2.waitKey(0)
+#     cv2.destroyAllWindows()
 
 
 # def match_histogram(hist_to_compare, hist_array):

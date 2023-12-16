@@ -13,9 +13,10 @@ def main():
     # p.draw_contours()
     # p.draw_corners()
     p.match()
-    # p.type_based_matching()
     # p.show(p.solved_image)
+    # process_all("data/Jigsaw_shuffled")
     # process_all("data/Jigsaw_rotated")
+    # process_all("data/Jigsaw_scrambled")
 
 
 def process_all(directory):
@@ -24,7 +25,10 @@ def process_all(directory):
             if (file != "jigsaw_rotated_5x5_01.png" and
                     file != "jigsaw_rotated_5x5_03.png" and file != "jigsaw_rotated_5x5_06.png" and
                     file != "jigsaw_shuffled_5x5_01.png" and
-                    file != "jigsaw_shuffled_5x5_03.png" and file != "jigsaw_shuffled_5x5_06.png"):
+                    file != "jigsaw_shuffled_5x5_03.png" and file != "jigsaw_shuffled_5x5_06.png" and
+                    file != "jigsaw_scrambled_5x5_01.png" and
+                    file != "jigsaw_scrambled_5x5_03.png" and file != "jigsaw_scrambled_5x5_06.png"):
+                print(file)
                 path = os.path.join(subdir, file)
                 puzzle = Puzzle(path)
                 puzzle.initialise_puzzle()
@@ -32,7 +36,6 @@ def process_all(directory):
                 # puzzle.draw_contours()
                 # puzzle.draw_corners()
                 puzzle.match()
-                # puzzle.solve_puzzle_black()
 
 
 if __name__ == '__main__':
