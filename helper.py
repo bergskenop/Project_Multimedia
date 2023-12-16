@@ -234,9 +234,7 @@ def match(pieces, puzzle_dim):
     solved_width = 0
     solved_height = 0
     pieces_solved = np.array(pieces_solved).reshape(rows, columns)
-    pieces_solved_cpy = pieces_solved.copy()
 
-    # print(pieces_solved.shape)
     for row in range(rows):
         for col in range(columns):
             if pieces_solved[row][col].get_piece_height() > solved_height:
@@ -245,31 +243,45 @@ def match(pieces, puzzle_dim):
                 solved_width = pieces_solved[row][col].get_piece_width()
 
     solved_image = np.zeros([solved_height * rows, solved_width * columns, 3], dtype=np.uint8)
-    min_y = 0
-    max_y = 0
-    # print(f'rows: {rows}, columns: {columns}')
-    for row, row_pieces in enumerate(pieces_solved):
-        min_x = 0
-        max_x = 0
 
-        for column, piece in enumerate(row_pieces):
-            max_x += piece.get_piece_width()
+    width_uitsteek = 0
+    height_uitsteek = 0
+    for r, row_pieces in enumerate(pieces_solved):
+        for c, piece in enumerate(row_pieces):
+            if ((piece.get_edges()[0].get_type() == "straight" and piece.get_edges()[2].get_type() == "outie") or
+                (piece.get_edges()[0].get_type() == "outie" and piece.get_edges()[2].get_type() == "straight")):
+                width_uitsteek = piece.get_piece_width() - piece.get_width() - 2
+            if ((piece.get_edges()[1].get_type() == "straight" and piece.get_edges()[3].get_type() == "outie") or
+                (piece.get_edges()[1].get_type() == "outie" and piece.get_edges()[3].get_type() == "straight")):
+                height_uitsteek = piece.get_piece_height() - piece.get_height() - 2
+
+    min_y = 0
+    max_x = 0
+    totaal_y = 0
+    for r, row_pieces in enumerate(pieces_solved):
+        for c, piece in enumerate(row_pieces):
+            if c > 0:
+                min_x = max_x - width_uitsteek
+            else:
+                min_x = 0
+            if r > 0:
+                if pieces_solved[r - 1][c].get_edges()[1].get_type() == "outie":
+                    min_y = totaal_y
+                else:
+                    min_y = totaal_y - height_uitsteek
+
+            max_x = min_x + piece.get_piece_width()
             max_y = min_y + piece.get_piece_height()
-            # cv2.imshow('next piece', piece.get_piece())
-            # cv2.waitKey(0)
-            # print(
-            #     f'position: ({row}, {column}) -> {piece.get_height()} by {piece.get_width()} and {piece.get_piece_height()} by {piece.get_piece_width()} ')
 
             temp_img = np.zeros_like(solved_image)
             temp_img[min_y:max_y, min_x:max_x, :] = piece.get_piece()
             solved_image = cv2.bitwise_or(solved_image, temp_img, mask=None)
-            min_x = max_x
 
-        min_y += solved_height
-    # overlap(solved_image)
-    cv2.imshow('solved_image', solved_image)
-    cv2.waitKey(25)
-    cv2.destroyAllWindows()
+        totaal_y += pieces_solved[r][0].get_height()
+
+        cv2.imshow('solved_image', solved_image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 
 
 def overlap(pieces):
