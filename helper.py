@@ -2,8 +2,9 @@ import cv2
 import numpy as np
 
 
-def identify_and_place_corners(pieces, piece_dim, puzzle_dim):
-    height_puzzle_piece, width_puzzle_piece = piece_dim
+def identify_and_place_corners(pieces, puzzle_dim):
+    height_puzzle_piece = pieces[0].get_height()
+    width_puzzle_piece = pieces[0].get_width()
     rows, columns, _ = puzzle_dim
     solved_image = np.zeros([height_puzzle_piece * rows, width_puzzle_piece * columns, 3], dtype=np.uint8)
     for piece in pieces:
@@ -40,7 +41,9 @@ def identify_and_place_corners(pieces, piece_dim, puzzle_dim):
             temp_image[min_x:max_x, min_y:max_y, :] = piece_img
             solved_image = cv2.bitwise_or(solved_image, temp_image, mask=None)
             # solved_image=solved_image
-    return solved_image
+    cv2.imshow('solved_image', solved_image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 
 # 5x5_01 en 5x5_03 en 5x5_06 zullen nooit werken omdat hun hoeken slecht gedetecteerd worden,
@@ -279,9 +282,9 @@ def match(pieces, puzzle_dim):
 
         totaal_y += pieces_solved[r][0].get_height()
 
-        cv2.imshow('solved_image', solved_image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+    cv2.imshow('solved_image', solved_image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 
 def overlap(pieces):
@@ -301,13 +304,13 @@ def overlap(pieces):
     cv2.destroyAllWindows()
 
 
-def match_histogram(hist_to_compare, hist_array):
-    # method: 0 => correlation, 1 => chi-square, 2 => intersection en 3 => Bhattacharyya
-    best_match_index = 0
-    best_match_value = cv2.compareHist(hist_to_compare, hist_array[0], method=1)
-    for n in range(1, len(hist_array)):
-        value = cv2.compareHist(hist_to_compare, hist_array[n], method=1)
-        if value < best_match_value:
-            best_match_index = n
-            best_match_value = value
-    return best_match_index
+# def match_histogram(hist_to_compare, hist_array):
+#     # method: 0 => correlation, 1 => chi-square, 2 => intersection en 3 => Bhattacharyya
+#     best_match_index = 0
+#     best_match_value = cv2.compareHist(hist_to_compare, hist_array[0], method=1)
+#     for n in range(1, len(hist_array)):
+#         value = cv2.compareHist(hist_to_compare, hist_array[n], method=1)
+#         if value < best_match_value:
+#             best_match_index = n
+#             best_match_value = value
+#     return best_match_index

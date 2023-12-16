@@ -1,7 +1,3 @@
-import os
-
-import numpy as np
-
 from PuzzlePiece import *
 import re
 from helper import *
@@ -34,7 +30,7 @@ class Puzzle:
         self.set_puzzle_parameters()  # Parameterbepaling uit filename
         if self.type == 2:
             self.scrambled2rotated()
-        self.set_contour_draw()  # Contour detectie van puzzelstukken
+        self.set_contour()  # Contour detectie van puzzelstukken
         self.set_puzzle_pieces()
 
     def set_puzzle_parameters(self):
@@ -49,7 +45,7 @@ class Puzzle:
         self.columns = int(str(re.compile("[0-9]$").findall(scale[0])[0]))
         self.size = self.rows * self.columns
 
-    def set_contour_draw(self):
+    def set_contour(self):
         img_gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
         ret, thresh = cv2.threshold(img_gray, 0, 254, 0)
         contours2, hierarchy2 = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
@@ -81,7 +77,7 @@ class Puzzle:
             # temp_img = self.image.copy()
             # for corner in temp_corners:
             #     cv2.circle(temp_img, corner, 3, (0, 255, 255), -1)
-            # self.show(temp_img)
+            # self.show(contour_img)
 
             # Hoekpunten in de juiste volgorde zetten lukt alleen bij rotated of shuffled
             # volgorde = [3, 1, 0, 2]
@@ -193,7 +189,10 @@ class Puzzle:
         isGelukt = False
         while not isGelukt and teller < 10:
             try:
-                match(self.puzzle_pieces, (self.rows, self.columns, 3))
+                if self.size == 4:
+                    identify_and_place_corners(self.puzzle_pieces, (self.rows, self.columns, 3))
+                else:
+                    match(self.puzzle_pieces, (self.rows, self.columns, 3))
                 isGelukt = True
             except TypeError as e:
                 print(e)
@@ -203,35 +202,35 @@ class Puzzle:
         if teller >= 10:
             raise Exception("Your error message here")
 
-    def solve_puzzle_black(self):
-        solved_width = 0
-        solved_height = 0
-
-        for row in range(self.rows):
-            for col in range(self.columns):
-                if self.solved_image_pieces[row][col].get_piece_height() > solved_height:
-                    solved_height = self.solved_image_pieces[row][col].get_piece_height()
-                if self.solved_image_pieces[row][col].get_piece_width() > solved_width:
-                    solved_width = self.solved_image_pieces[row][col].get_piece_width()
-        solved_image = np.zeros([solved_height * self.rows, solved_width * self.columns, 3], dtype=np.uint8)
-        min_y = 0
-        max_y = 0
-        for row, row_pieces in enumerate(self.solved_image_pieces):
-            min_x = 0
-            max_x = 0
-
-            for column, piece in enumerate(row_pieces):
-                max_x += piece.get_piece_width()
-                max_y = min_y + piece.get_piece_height()
-                temp_img = np.zeros_like(solved_image)
-                temp_img[min_y:max_y, min_x:max_x, :] = piece.get_piece()
-                solved_image = cv2.bitwise_or(solved_image, temp_img, mask=None)
-                min_x = max_x
-
-            min_y += solved_height
-        cv2.imshow('solved_image', solved_image)
-        cv2.waitKey(2)
-        cv2.destroyAllWindows()
+    # def solve_puzzle_black(self):
+    #     solved_width = 0
+    #     solved_height = 0
+    #
+    #     for row in range(self.rows):
+    #         for col in range(self.columns):
+    #             if self.solved_image_pieces[row][col].get_piece_height() > solved_height:
+    #                 solved_height = self.solved_image_pieces[row][col].get_piece_height()
+    #             if self.solved_image_pieces[row][col].get_piece_width() > solved_width:
+    #                 solved_width = self.solved_image_pieces[row][col].get_piece_width()
+    #     solved_image = np.zeros([solved_height * self.rows, solved_width * self.columns, 3], dtype=np.uint8)
+    #     min_y = 0
+    #     max_y = 0
+    #     for row, row_pieces in enumerate(self.solved_image_pieces):
+    #         min_x = 0
+    #         max_x = 0
+    #
+    #         for column, piece in enumerate(row_pieces):
+    #             max_x += piece.get_piece_width()
+    #             max_y = min_y + piece.get_piece_height()
+    #             temp_img = np.zeros_like(solved_image)
+    #             temp_img[min_y:max_y, min_x:max_x, :] = piece.get_piece()
+    #             solved_image = cv2.bitwise_or(solved_image, temp_img, mask=None)
+    #             min_x = max_x
+    #
+    #         min_y += solved_height
+    #     cv2.imshow('solved_image', solved_image)
+    #     cv2.waitKey(2)
+    #     cv2.destroyAllWindows()
 
     def solve_puzzle(self):
         solved_width = 0
@@ -258,10 +257,12 @@ class Puzzle:
                 self.show(solved_image)
 
     def show(self, img=None, delay=0):
+        show_image = img
         if img is None:
-            cv2.imshow(f'Puzzle {self.rows}x{self.columns} {self.type}', self.image)
-        else:
-            cv2.imshow(f'Puzzle {self.rows}x{self.columns} {self.type}', img)
+            show_image = self.image
+        if show_image.shape[0] > 800 and show_image.shape[1] > 700:
+            show_image = cv2.resize(show_image, (int(show_image.shape[0] / 1.5), int(show_image.shape[1] / 1.5)))
+        cv2.imshow(f'Puzzle {self.rows}x{self.columns} {self.type}', show_image)
         cv2.waitKey(delay)
 
     def draw_contours(self):

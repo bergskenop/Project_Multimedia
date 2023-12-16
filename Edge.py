@@ -15,31 +15,34 @@ class Edge:
     # edge_number variabele bepaald in welke richting de hoekpunten liggen
     # (kan ook zonder door hoeken variabele te analyseren)
     def set_type(self, edge_number, width, height):
+        # Grotere speling nodig bij de hoeken van scrambled, hier gemakkelijk aan te passen,
+        # bij shuffled en rotated is 3 al genoeg
+        speling = 8
         if edge_number == 0:
-            if np.all([self.hoeken[0][0]-3 < x < self.hoeken[0][0]+3 for x, y in self.edge_points]):
+            if np.all([self.hoeken[0][0]-speling < x < self.hoeken[0][0]+speling for x, y in self.edge_points]):
                 self.type = 'straight'
-            elif np.any([x < self.hoeken[0][0]-3 for x, y in self.edge_points]):
+            elif np.any([x < self.hoeken[0][0]-speling for x, y in self.edge_points]):
                 self.type = 'outie'
             else:
                 self.type = 'innie'
         elif edge_number == 1:
-            if np.all([self.hoeken[0][1]-3 < y < self.hoeken[0][1]+3 for x, y in self.edge_points]):
+            if np.all([self.hoeken[0][1]-speling < y < self.hoeken[0][1]+speling for x, y in self.edge_points]):
                 self.type = 'straight'
-            elif np.any([y > self.hoeken[1][1]+3 for x, y in self.edge_points]):
+            elif np.any([y > self.hoeken[1][1]+speling for x, y in self.edge_points]):
                 self.type = 'outie'
             else:
                 self.type = 'innie'
         elif edge_number == 2:
-            if np.all([self.hoeken[0][0]-3 < x < self.hoeken[0][0]+3 for x, y in self.edge_points]):
+            if np.all([self.hoeken[0][0]-speling < x < self.hoeken[0][0]+speling for x, y in self.edge_points]):
                 self.type = 'straight'
-            elif np.any([x < self.hoeken[0][0]-3 for x, y in self.edge_points]):
+            elif np.any([x < self.hoeken[0][0]-speling for x, y in self.edge_points]):
                 self.type = 'innie'
             else:
                 self.type = 'outie'
         else:
-            if np.all([self.hoeken[0][1]-3 < y < self.hoeken[0][1]+3 for x, y in self.edge_points]):
+            if np.all([self.hoeken[0][1]-speling < y < self.hoeken[0][1]+speling for x, y in self.edge_points]):
                 self.type = 'straight'
-            elif np.any([y < self.hoeken[1][1]-3 for x, y in self.edge_points]):
+            elif np.any([y < self.hoeken[1][1]-speling for x, y in self.edge_points]):
                 self.type = 'outie'
             else:
                 self.type = 'innie'
