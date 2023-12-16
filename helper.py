@@ -220,6 +220,7 @@ def match(pieces, puzzle_dim):
     solved_width = 0
     solved_height = 0
     pieces_solved = np.array(pieces_solved).reshape(rows, columns)
+
     # print(pieces_solved.shape)
     for row in range(rows):
         for col in range(columns):
@@ -251,8 +252,16 @@ def match(pieces, puzzle_dim):
 
         min_y += solved_height
     cv2.imshow('solved_image', solved_image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    cv2.waitKey(200)
+    overlap(solved_image)
+    # cv2.destroyAllWindows()
+
+def overlap(pieces):
+    solved_height = max(pieces.shape[0], axis=0)
+    print(solved_height)
+    solved_width = 0
+    rows, columns, _ = pieces.shape
+    solved_image = np.zeros([solved_height * rows, solved_width * columns, 3], dtype=np.uint8)
 
 
 def match_histogram(hist_to_compare, hist_array):

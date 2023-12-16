@@ -92,7 +92,6 @@ class PuzzlePiece:
         if self.piece is not None:
             cv2.imshow(f'Puzzlepiece', self.piece)
             cv2.waitKey(0)
-            cv2.destroyWindow('Puzzlepiece')
 
     def print_puzzlepiece(self):
         print(f'Puzzelpiece heeft {len(self.points)} punten')

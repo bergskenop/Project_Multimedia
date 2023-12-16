@@ -1,3 +1,5 @@
+import os
+
 from PuzzlePiece import *
 import re
 from helper import *
@@ -72,6 +74,12 @@ class Puzzle:
                 x, y = c.ravel()
                 temp_corners.append((x, y))
             corners_in_correct_order = []
+
+            temp_img = self.image.copy()
+            for corner in temp_corners:
+                cv2.circle(temp_img, corner, 3, (0, 255, 255), -1)
+            self.show(temp_img)
+
             volgorde = [3, 1, 0, 2]
             for v in volgorde:
                 corners_in_correct_order.append(temp_corners[v])
@@ -103,56 +111,40 @@ class Puzzle:
             # puzzle_piece.print_puzzlepiece()  # information about individual puzzlepiece
 
     def scrambled2rotated(self):
-        img_gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
-        ret, thresh = cv2.threshold(img_gray, 0, 254, 0)
-        contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
-        contours = sorted(contours, key=cv2.contourArea, reverse=True)
-        contours = contours[:self.size]
-        temp_pieces = []
-        for contour in contours:
-            contour = np.squeeze(contour)
-            list_contour = list(zip(contour[:, 0], contour[:, 1]))
-            min_x = min(list_contour, key=lambda x: x[0])[0]
-            max_x = max(list_contour, key=lambda x: x[0])[0]
-            min_y = min(list_contour, key=lambda x: x[1])[1]
-            max_y = max(list_contour, key=lambda x: x[1])[1]
-            temp_pieces.append(self.image[min_y - 5:max_y + 5, min_x - 5:max_x + 5, :])
+        for i in range(1):
+            img_gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
+            ret, thresh = cv2.threshold(img_gray, 0, 254, 0)
+            contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+            contours = sorted(contours, key=cv2.contourArea, reverse=True)
+            contours = contours[:self.size]
+            temp_pieces = []
+            for contour in contours:
+                contour = np.squeeze(contour)
+                list_contour = list(zip(contour[:, 0], contour[:, 1]))
+                min_x = min(list_contour, key=lambda x: x[0])[0]
+                max_x = max(list_contour, key=lambda x: x[0])[0]
+                min_y = min(list_contour, key=lambda x: x[1])[1]
+                max_y = max(list_contour, key=lambda x: x[1])[1]
+                temp_pieces.append(self.image[min_y - 5:max_y + 5, min_x - 5:max_x + 5, :])
 
-        rotated_list = []
-        for i in range(0, 1):
             for p, piece in enumerate(temp_pieces):
                 piece_gray = cv2.cvtColor(piece, cv2.COLOR_BGR2GRAY)
                 ret, piece_thresh = cv2.threshold(piece_gray, 0, 254, 0)
-                kernel = np.ones((3, 3), np.uint8)
-                dilate = cv2.dilate(piece_thresh, kernel, iterations=1)
-                erosion = cv2.erode(piece_thresh, kernel, iterations=1)
-                cnt = cv2.bitwise_xor(erosion, dilate, mask=None)
-                thres_n = 80
-                lines = cv2.HoughLines(cnt, 1, np.pi / 180, threshold=thres_n)
-                angles = []
-                while lines is None and thres_n >= 20:
-                    thres_n -= 5
-                    lines = cv2.HoughLines(cnt, 1, np.pi / 180, threshold=thres_n)
-                print(f'threshold value: {thres_n}')
-                if lines is not None:
-                    for line in lines:
-                        rho, theta = line[0]
-                        angle = np.degrees(theta)
-                        if 0 <= angle <= 90:
-                            angles.append(angle)
-                    if len(angles) > 1:
-                        # Compute the median angle
-                        median_angle = np.median(angles)
-
-                        # Calculate the rotation angle
-                        rotation_angle = (90.0 - median_angle)
-                        print(rotation_angle)
-
-                        piece = imutils.rotate_bound(piece, rotation_angle)
-                    temp_pieces[p] = piece
-        rotated_list = temp_pieces
-        self.place_pieces(rotated_list)
-        return 0
+                edges = cv2.Canny(piece_thresh, 50, 150, apertureSize=3)
+                thresh_n = 80
+                lines = cv2.HoughLines(edges, 1, np.pi / 180, threshold=thresh_n)
+                while lines is None or len(lines) < 4:
+                    thresh_n -= 1
+                    lines = cv2.HoughLines(edges, 1, np.pi / 180, threshold=thresh_n)
+                lines = sorted(lines, key=lambda line: line[0][1], reverse=True)
+                piece_cpy = piece.copy()
+                rho, theta = lines[0][0]
+                angle = round(90 - np.degrees(theta),2)
+                print(f'interation {i} : {angle}')
+                rotate = imutils.rotate_bound(piece_cpy, angle)
+                temp_pieces[p] = rotate
+            rotated_list = temp_pieces
+            self.place_pieces(rotated_list)
 
     def place_pieces(self, pieces):
         max_height = max(piece.shape[0] for piece in pieces)
@@ -167,7 +159,16 @@ class Puzzle:
                 x_offset = j * max_width
 
                 rotated_puzzle[y_offset:y_offset + piece.shape[0], x_offset:x_offset + piece.shape[1]] = piece
-        self.show(rotated_puzzle, delay=0)
+        self.image = rotated_puzzle.copy()
+        self.type = 3
+        # desktop_path = os.path.join(os.path.expanduser('~'), 'Desktop')
+        # folder_name = 'output_folder'
+        # output_folder = os.path.join(desktop_path, folder_name)
+        # os.makedirs(output_folder, exist_ok=True)
+        # output_path = os.path.join(output_folder, self.image_path.replace('\\', '-').replace('/', '_'))
+        # print(output_path)
+        # cv2.imwrite(output_path, self.image)
+        # self.show(delay=0)
 
     def match(self):
         # Als de logica een error geeft plaatsen we de stukken in een andere volgorde om dan hopelijk een goed
@@ -184,6 +185,9 @@ class Puzzle:
                 print("ERROR")
                 random.shuffle(self.puzzle_pieces)
                 teller += 1
+                isGelukt=True
+        if teller >= 10:
+            raise Exception("Your error message here")
 
     def show(self, img=None, delay=0):
         if img is None:
@@ -191,7 +195,6 @@ class Puzzle:
         else:
             cv2.imshow(f'Puzzle {self.rows}x{self.columns} {self.type}', img)
         cv2.waitKey(delay)
-        cv2.destroyAllWindows()
 
     def draw_contours(self):
         img_contours = np.zeros_like(self.image)

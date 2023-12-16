@@ -101,7 +101,6 @@ for n, cont in enumerate(contours):
 
     cv2.imshow('detect_image', detect_image)
     cv2.waitKey(0)
-    cv2.destroyAllWindows()
 
     # intersect_image = np.zeros_like(image)
     # intersect_image = cv2.cvtColor(intersect_image, cv2.COLOR_BGR2GRAY)
@@ -132,7 +131,6 @@ for n, cont in enumerate(contours):
 # Display the result
 cv2.imshow('Hough Lines', image)
 cv2.waitKey(0)
-cv2.destroyAllWindows()
 
 
 
