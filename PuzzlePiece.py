@@ -46,7 +46,7 @@ class PuzzlePiece:
     def set_piece(self, image):
         self.piece = image
 
-    def set_edges_and_corners(self, image, corners):
+    def set_edges_and_corners(self, image, corners, size):
         # Hier corners instellen omdat de punten die Harris corner detection vindt niet altijd in de contour liggen,
         # Daarom dichtsbijzijnde punten in de contour vinden en deze gebruiken als hoekpunt
         for corner in corners:
@@ -72,10 +72,8 @@ class PuzzlePiece:
         self.edges.append(Edge((self.corners[3], self.corners[0]), punten_laatste_rand,
                                lengte))
 
-        width = abs(self.corners[1][0] - self.corners[2][0])
-        height = abs(self.corners[0][1] - self.corners[1][1])
         for i, edge in enumerate(self.edges):
-            edge.set_type(i, width, height)
+            edge.set_type(i, size)
             edge.calculate_histogram(image)
         #     edge.print_edge()
         # print("-----------------------------")

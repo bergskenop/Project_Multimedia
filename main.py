@@ -10,7 +10,7 @@ def main():
     p = Puzzle(path)
     p.initialise_puzzle()
     # p.show()
-    # p.draw_contours()
+    p.draw_contours()
     # p.draw_corners()
     p.match()
     # p.show(p.solved_image)

@@ -1,3 +1,5 @@
+import cv2
+
 from PuzzlePiece import *
 import re
 from helper import *
@@ -79,11 +81,6 @@ class Puzzle:
             #     x, y = c.ravel()
             #     temp_corners.append((x, y))
 
-            # temp_img = self.image.copy()
-            # for corner in temp_corners:
-            #     cv2.circle(temp_img, corner, 3, (0, 255, 255), -1)
-            # self.show(temp_img)
-
             contour = np.squeeze(contour)
             list_contours = list(zip(contour[:, 0], contour[:, 1]))
 
@@ -106,7 +103,7 @@ class Puzzle:
             print(piece_w, piece_h)
             if self.size == 9:
                 begin = 70
-            if self.size > 15 or piece_w < 100:
+            if self.size > 15 or piece_w < 130:
                 begin = 50
             for i in range(begin, 0, -2):
                 for j in range(begin, 0, -2):
@@ -120,9 +117,9 @@ class Puzzle:
                                 rico = (y2 - y1) / (x2 - x1)
                                 angle = math.degrees(math.atan(rico))
                                 cv2.line(detect_image, (x1, y1), (x2, y2), (255, 255, 255), 1)
-                                if y1 + 5 > y2 > y1 - 5 and (len(y_n) == 0 or np.abs(y_n[0] - y1) > 20):
+                                if y1 + 10 > y2 > y1 - 10 and (len(y_n) == 0 or np.abs(y_n[0] - y1) > 20):
                                     y_n.append(y1)
-                                if x1 + 5 > x2 > x1 - 5 and (len(x_n) == 0 or np.abs(x_n[0] - x1) > 20):
+                                if x1 + 10 > x2 > x1 - 10 and (len(x_n) == 0 or np.abs(x_n[0] - x1) > 20):
                                     x_n.append(x1)
 
                             if len(x_n) == 2 and len(y_n) == 2:
@@ -142,6 +139,11 @@ class Puzzle:
 
             temp_corners = [(x_n[0], y_n[0]), (x_n[1], y_n[0]), (x_n[0], y_n[1]), (x_n[1], y_n[1])]
 
+            # temp_img = self.image.copy()
+            # for corner in temp_corners:
+            #     cv2.circle(temp_img, corner, 3, (0, 255, 255), -1)
+            # self.show(temp_img)
+
             # Hoekpunten in de juiste volgorde zetten lukt alleen bij rotated of shuffled
             # volgorde = [3, 1, 0, 2]
             # corners_in_correct_order = []
@@ -158,7 +160,7 @@ class Puzzle:
             corners_in_correct_order.append(sorted(sorted_y[:2], key=lambda x: x[0])[1])
 
             puzzle_piece = PuzzlePiece(list_contours)
-            puzzle_piece.set_edges_and_corners(self.image.copy(), corners_in_correct_order)
+            puzzle_piece.set_edges_and_corners(self.image.copy(), corners_in_correct_order, self.size)
 
             height_puzzle_piece = abs(corners_in_correct_order[0][1] - corners_in_correct_order[1][1])
             width_puzzle_piece = abs(corners_in_correct_order[1][0] - corners_in_correct_order[2][0])
@@ -229,6 +231,11 @@ class Puzzle:
 
                 rotated_puzzle[y_offset:y_offset + piece.shape[0], x_offset:x_offset + piece.shape[1]] = piece
         self.image = rotated_puzzle.copy()
+        # Image van scrambled vergroten na het draaien, hierdoor betere contours te bepalen
+        self.image = cv2.resize(self.image, None, fx=1.25, fy=1.25, interpolation=cv2.INTER_CUBIC)
+        cv2.imshow("scrambled2rotate", self.image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
         self.type = 3
         # desktop_path = os.path.join(os.path.expanduser('~'), 'Desktop')
         # folder_name = 'output_folder'
@@ -333,4 +340,4 @@ class Puzzle:
         for piece in self.puzzle_pieces:
             for corner in piece.corners:
                 cv2.circle(img_corners, corner, 3, (0, 255, 255), -1)
-            self.show(img_corners)
+        self.show(img_corners)

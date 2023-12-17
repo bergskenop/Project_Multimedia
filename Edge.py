@@ -14,10 +14,13 @@ class Edge:
     # Set_type gaat er steeds van uit dat het eerste hoekpunt zich linksboven bevind
     # edge_number variabele bepaald in welke richting de hoekpunten liggen
     # (kan ook zonder door hoeken variabele te analyseren)
-    def set_type(self, edge_number, width, height):
+    def set_type(self, edge_number, size):
         # Grotere speling nodig bij de hoeken van scrambled, hier gemakkelijk aan te passen,
         # bij shuffled en rotated is 3 al genoeg
-        speling = 8
+        if size == 25:
+            speling = 5
+        else:
+            speling = 8
         if edge_number == 0:
             if np.all([self.hoeken[0][0]-speling < x < self.hoeken[0][0]+speling for x, y in self.edge_points]):
                 self.type = 'straight'
