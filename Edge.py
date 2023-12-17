@@ -5,11 +5,12 @@ import matplotlib.pyplot as plt
 
 class Edge:
     def __init__(self, hoeken, points, lengte):
-        self.edge_points = points  # Alle punten van de rand => eventueel verwijderen later
+        self.edge_points = points  # Alle punten van de rand
         self.type = None  # Straight, innie of outie
-        self.hoeken = hoeken  # 2 hoekpunten van de rand (2 uitersten) => eventueel verwijderen later
+        self.hoeken = hoeken  # 2 hoekpunten van de rand (2 uitersten)
         self.histogram = None  # Bevat de punten van het histogram van de zwart-wit waarden van de randen
         self.lengte = lengte
+
 
     # Set_type gaat er steeds van uit dat het eerste hoekpunt zich linksboven bevind
     # edge_number variabele bepaald in welke richting de hoekpunten liggen
@@ -17,12 +18,10 @@ class Edge:
     def set_type(self, edge_number, size, type_puzzel):
         # Grotere speling nodig bij de hoeken van scrambled, hier gemakkelijk aan te passen,
         # bij shuffled en rotated is 3 al genoeg
-        if size == 25 or type_puzzel == 2:
+        if size == 25:
             speling = 5
         else:
             speling = 8
-        # if type_puzzel == 2:
-        #     speling = 3
         if edge_number == 0:
             if np.all([self.hoeken[0][0]-speling < x < self.hoeken[0][0]+speling for x, y in self.edge_points]):
                 self.type = 'straight'
@@ -63,7 +62,6 @@ class Edge:
         self.hoeken = hoeken
 
     def set_points(self, points):
-        # Use Linear and cubic spline to interpolate edges
         self.edge_points = points
 
     def get_edge_points(self):
@@ -78,6 +76,7 @@ class Edge:
     def print_edge(self):
         print(f'Hoeken : {self.hoeken} van het type {self.type} met {len(self.edge_points)} punten')
 
+
     # Calculate the histogram of the edge points in an image
     # Omdat cv2.circle de punten tekent op de rand van de figuur zullen de helft van de randpunten in het pikzwarte
     # gebied liggen, vandaar doen we nog eens een bitwise and met de puzzel stukken om alleen de echte randpixels
@@ -91,17 +90,8 @@ class Edge:
             cv2.circle(mask, point, 4, (255, 255, 255), -1)
         gray_mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
         mask_perfect = cv2.bitwise_and(image_threshold, image_threshold, mask=gray_mask)
-        # UNCOMMENT TO SHOW EDGES ONE BY ONE
-        # cv2.imshow('mask', mask_perfect)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
         hist = cv2.calcHist([gray_image], [0], mask_perfect, [256], [0, 256])
         self.histogram = cv2.normalize(hist, hist, 0, 1, cv2.NORM_MINMAX)
         # plt.plot(self.histogram)
         # plt.show()
-
-
-
-
-
 

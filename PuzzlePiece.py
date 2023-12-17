@@ -6,8 +6,8 @@ import cv2
 class PuzzlePiece:
     def __init__(self, points):
         self.piece = None
-        self.points = points  # later wegdoen?
-        self.corners = []  # later wegdoen?
+        self.points = points
+        self.corners = []
         self.edges = []
         self.width = None
         self.height = None
@@ -75,8 +75,8 @@ class PuzzlePiece:
         for i, edge in enumerate(self.edges):
             edge.set_type(i, size, type_puzzel)
             edge.calculate_histogram(image)
-            edge.print_edge()
-        print("-----------------------------")
+        #     edge.print_edge()
+        # print("-----------------------------")
 
     def rotate(self, angle):
         self.piece = imutils.rotate_bound(self.piece, angle)
@@ -86,10 +86,12 @@ class PuzzlePiece:
             self.piece_width, self.piece_height = self.piece_height, self.piece_width
             self.width, self.height = self.height, self.width
 
+
     def show_puzzlepiece(self):
         if self.piece is not None:
             cv2.imshow(f'Puzzlepiece', self.piece)
             cv2.waitKey(0)
+
 
     def print_puzzlepiece(self):
         print(f'Puzzelpiece heeft {len(self.points)} punten')
