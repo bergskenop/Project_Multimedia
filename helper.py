@@ -150,7 +150,8 @@ def match(pieces, puzzle_dim, nummer, type_stuk):
                             value1 = value_right
                         else:
                             value_right = cv2.compareHist(hist_of_edge_to_match_right, edge.get_histogram(), method=3)
-                            value_above = cv2.compareHist(hist_of_edge_to_match_above, piece.get_edges()[n - 1].get_histogram(), method=3)
+                            value_above = cv2.compareHist(hist_of_edge_to_match_above,
+                                                          piece.get_edges()[n - 1].get_histogram(), method=3)
                             value1 = np.mean([value_right, value_above])
                         # value2 = cv2.compareHist(hist_of_edge_to_match, edge.get_histogram(), method=1)
                         # value3 = cv2.compareHist(hist_of_edge_to_match, edge.get_histogram(), method=0)
@@ -188,7 +189,8 @@ def match(pieces, puzzle_dim, nummer, type_stuk):
             if (rows == columns and ((rij == 0 and not best_piece.get_edges()[3].get_type() == 'straight') or
                                      (rij == (rows - 1) and not best_piece.get_edges()[1].get_type() == 'straight') or
                                      (kolom == 0 and not best_piece.get_edges()[0].get_type() == 'straight') or
-                                     (kolom == (columns - 1) and not best_piece.get_edges()[2].get_type() == 'straight') or
+                                     (kolom == (columns - 1) and not best_piece.get_edges()[
+                                                                         2].get_type() == 'straight') or
                                      (heeft_rechte_rand and rij != 0 and rij != (rows - 1)
                                       and kolom != 0 and kolom != (columns - 1)) or
                                      (best_piece.get_edges()[3].get_type() == 'straight' and
@@ -200,7 +202,7 @@ def match(pieces, puzzle_dim, nummer, type_stuk):
                                      (best_piece.get_edges()[1].get_type() == 'straight' and
                                       best_piece.get_edges()[2].get_type() == 'straight' and
                                       (rij != (rows - 1) or kolom != (columns - 1))) or
-                                     (rij != 0 and pieces_solved[(number+1) - columns].get_edges()[1].get_type() ==
+                                     (rij != 0 and pieces_solved[(number + 1) - columns].get_edges()[1].get_type() ==
                                       best_piece.get_edges()[3].get_type()))):
                 # Terugzetten naar de originele toestand zoals ze in pieces_copy staan
                 best_piece.rotate(360 - rotate_angle)
@@ -227,47 +229,57 @@ def match(pieces, puzzle_dim, nummer, type_stuk):
 
     pieces_solved = np.array(pieces_solved).reshape(rows, columns)
 
-    solved_image = np.zeros([pieces_solved[0][0].get_height() * rows + 10, pieces_solved[0][0].get_width() * columns + 10, 3], dtype=np.uint8)
+    solved_image = np.zeros(
+        [pieces_solved[0][0].get_height() * rows + 10, pieces_solved[0][0].get_width() * columns + 10, 3],
+        dtype=np.uint8)
 
     width_uitsteek = 0
     height_uitsteek = 0
     for r, row_pieces in enumerate(pieces_solved):
         for c, piece in enumerate(row_pieces):
-            if ((piece.get_edges()[0].get_type() == "straight" and piece.get_edges()[2].get_type() == "outie") or
-                (piece.get_edges()[0].get_type() == "outie" and piece.get_edges()[2].get_type() == "straight")):
+            if ((piece.get_edges()[0].get_type() == "innie" and piece.get_edges()[2].get_type() == "outie") or
+                    (piece.get_edges()[0].get_type() == "outie" and piece.get_edges()[2].get_type() == "innie") or
+                    (piece.get_edges()[0].get_type() == "straight" and piece.get_edges()[2].get_type() == "outie") or
+                    (piece.get_edges()[0].get_type() == "outie" and piece.get_edges()[2].get_type() == "straight")):
                 width_uitsteek = piece.get_piece_width() - piece.get_width()
-            if ((piece.get_edges()[1].get_type() == "straight" and piece.get_edges()[3].get_type() == "outie") or
-                (piece.get_edges()[1].get_type() == "outie" and piece.get_edges()[3].get_type() == "straight")):
+            if ((piece.get_edges()[1].get_type() == "innie" and piece.get_edges()[3].get_type() == "outie") or
+                    (piece.get_edges()[1].get_type() == "outie" and piece.get_edges()[3].get_type() == "innie") or
+                    (piece.get_edges()[1].get_type() == "straight" and piece.get_edges()[3].get_type() == "outie") or
+                    (piece.get_edges()[1].get_type() == "outie" and piece.get_edges()[3].get_type() == "straight")):
                 height_uitsteek = piece.get_piece_height() - piece.get_height()
-    # Als het zo geen stuk heeft, kijk dan naar een stuk met 2 outie's en deel de lengte door 2
-    if width_uitsteek == 0:
-        for r, row_pieces in enumerate(pieces_solved):
-            for c, piece in enumerate(row_pieces):
-                if piece.get_edges()[0].get_type() == "outie" and piece.get_edges()[2].get_type() == "outie":
-                    width_uitsteek = (piece.get_piece_width() - piece.get_width())/2
-                    height_uitsteek = width_uitsteek
+    # # Als het zo geen stuk heeft, kijk dan naar een stuk met 2 outie's en deel de lengte door 2
+    # if width_uitsteek == 0:
+    #     for r, row_pieces in enumerate(pieces_solved):
+    #         for c, piece in enumerate(row_pieces):
+    #             if piece.get_edges()[0].get_type() == "outie" and piece.get_edges()[2].get_type() == "outie":
+    #                 width_uitsteek = (piece.get_piece_width() - piece.get_width()) / 2
+    #                 height_uitsteek = width_uitsteek
 
     min_y = 0
     max_x = 0
     totaal_y = 0
     for r, row_pieces in enumerate(pieces_solved):
         for c, piece in enumerate(row_pieces):
+            width_uitsteek = get_offset_x(piece, width_uitsteek)
             if c > 0:
-                min_x = max_x - width_uitsteek
+                min_x = max_x - width_uitsteek - 1
             else:
                 min_x = 0
+
+            height_uitsteek = get_offset_y(piece, height_uitsteek)
             if r > 0:
                 if pieces_solved[r - 1][c].get_edges()[1].get_type() == "outie":
                     min_y = totaal_y
                 else:
-                    min_y = totaal_y - height_uitsteek
-
+                    min_y = totaal_y - height_uitsteek-1
             max_x = min_x + piece.get_piece_width()
             max_y = min_y + piece.get_piece_height()
 
             temp_img = np.zeros_like(solved_image)
             temp_img[min_y:max_y, min_x:max_x, :] = piece.get_piece()
             solved_image = cv2.bitwise_or(solved_image, temp_img, mask=None)
+            # cv2.imshow('solving',solved_image)
+            # cv2.waitKey(0)
 
         totaal_y += pieces_solved[r][0].get_height()
 
@@ -276,10 +288,41 @@ def match(pieces, puzzle_dim, nummer, type_stuk):
         type_stuk_string = "SCRAMBLED"
     elif type_stuk == 3:
         type_stuk_string = "ROTATED"
-    cv2.imshow(f'SOLVED {rows}x{columns}_0{nummer} {type_stuk_string}', solved_image)
+    cv2.imshow(f'SOLVED', solved_image)
     cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.destroyAllWindows()
 
+
+def get_offset_x(piece, last_width_uitsteek):
+    if piece.get_edges()[0].get_type() == "outie" and piece.get_edges()[2].get_type() == "outie":
+        width_uitsteek = int(round((piece.get_piece_width() - piece.get_width()) / 2, 0))
+        return width_uitsteek
+    elif ((piece.get_edges()[0].get_type() == "innie" and piece.get_edges()[2].get_type() == "outie") or
+          (piece.get_edges()[0].get_type() == "outie" and piece.get_edges()[2].get_type() == "innie") or
+          (piece.get_edges()[0].get_type() == "straight" and piece.get_edges()[2].get_type() == "outie") or
+          (piece.get_edges()[0].get_type() == "outie" and piece.get_edges()[2].get_type() == "straight")):
+        width_uitsteek = (piece.get_piece_width() - piece.get_width())
+        return width_uitsteek
+    else:
+        print("old val x")
+        return last_width_uitsteek
+
+
+def get_offset_y(piece, last_height_uitsteek):
+    if piece.get_edges()[1].get_type() == "outie" and piece.get_edges()[3].get_type() == "outie":
+        height_uitsteek = int(round((piece.get_piece_height() - piece.get_height()) // 2, 0))
+        print('new_val')
+        return height_uitsteek
+    elif ((piece.get_edges()[1].get_type() == "innie" and piece.get_edges()[3].get_type() == "outie") or
+          (piece.get_edges()[1].get_type() == "outie" and piece.get_edges()[3].get_type() == "innie") or
+          (piece.get_edges()[1].get_type() == "straight" and piece.get_edges()[3].get_type() == "outie") or
+          (piece.get_edges()[1].get_type() == "outie" and piece.get_edges()[3].get_type() == "straight")):
+        height_uitsteek = (piece.get_piece_height() - piece.get_height())
+        print('new_val')
+        return height_uitsteek
+    else:
+        print("old val y")
+        return last_height_uitsteek
 
 # def overlap(pieces):
 #     solved_height = max(pieces.shape[0], axis=0)
