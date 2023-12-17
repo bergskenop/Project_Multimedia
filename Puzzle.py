@@ -32,6 +32,8 @@ class Puzzle:
 
     def initialise_puzzle(self):
         self.set_puzzle_parameters()  # Parameterbepaling uit filename
+        # self.set_contour()
+        # self.draw_contours()
         if self.type == 2:
             self.scrambled2rotated()
         self.set_contour()  # Contour detectie van puzzelstukken
@@ -53,7 +55,9 @@ class Puzzle:
 
     def set_contour(self):
         img_gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
-        ret, thresh = cv2.threshold(img_gray, 0, 254, 0)
+        ret, thresh = cv2.threshold(img_gray, 0, 255, 0)
+        cv2.imshow("thresh", thresh)
+        cv2.waitKey(0)
         contours2, hierarchy2 = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
         contours2 = sorted(contours2, key=cv2.contourArea, reverse=True)
         self.contours = contours2[:self.size]
@@ -160,7 +164,7 @@ class Puzzle:
             corners_in_correct_order.append(sorted(sorted_y[:2], key=lambda x: x[0])[1])
 
             puzzle_piece = PuzzlePiece(list_contours)
-            puzzle_piece.set_edges_and_corners(self.image.copy(), corners_in_correct_order, self.size)
+            puzzle_piece.set_edges_and_corners(self.image.copy(), corners_in_correct_order, self.size, self.type)
 
             height_puzzle_piece = abs(corners_in_correct_order[0][1] - corners_in_correct_order[1][1])
             width_puzzle_piece = abs(corners_in_correct_order[1][0] - corners_in_correct_order[2][0])
@@ -182,9 +186,40 @@ class Puzzle:
             # self.draw_corners()
 
     def scrambled2rotated(self):
+        # We gebruiken 2 enlarge methodes en nemen een bitwise and van de 2 om het beste resultaat te bekomen,
+        # dit doen we omdat de contours niet meer juist gedecteerd werden na het draaien avn de image
+        if self.size < 25:
+            afb1 = cv2.resize(self.image, None, fx=1.5, fy=1.5, interpolation=2)
+            afb1_gray = cv2.cvtColor(afb1, cv2.COLOR_BGR2GRAY)
+            afb2 = cv2.resize(self.image, None, fx=1.5, fy=1.5, interpolation=0)
+            afb2_gray = cv2.cvtColor(afb2, cv2.COLOR_BGR2GRAY)
+            _, thresh1 = cv2.threshold(afb1_gray, 0, 255, 0)
+            _, thresh2 = cv2.threshold(afb2_gray, 0, 255, 0)
+            mask = cv2.bitwise_and(thresh1, thresh2, mask=None)
+            mask = np.stack([mask, mask, mask], axis=2)
+            # cv2.imshow("mask", mask)
+            # cv2.waitKey(0)
+            self.image = cv2.bitwise_and(afb1, mask, mask=None)
+            # cv2.imshow("new_image", self.image)
+            # cv2.waitKey(0)
+        else:
+            afb1 = cv2.resize(self.image, None, fx=2, fy=2, interpolation=2)
+            afb1_gray = cv2.cvtColor(afb1, cv2.COLOR_BGR2GRAY)
+            afb2 = cv2.resize(self.image, None, fx=2, fy=2, interpolation=0)
+            afb2_gray = cv2.cvtColor(afb2, cv2.COLOR_BGR2GRAY)
+            _, thresh1 = cv2.threshold(afb1_gray, 0, 255, 0)
+            _, thresh2 = cv2.threshold(afb2_gray, 0, 255, 0)
+            mask = cv2.bitwise_and(thresh1, thresh2, mask=None)
+            mask = np.stack([mask, mask, mask], axis=2)
+            # cv2.imshow("mask", mask)
+            # cv2.waitKey(0)
+            self.image = cv2.bitwise_and(afb1, mask, mask=None)
+            # cv2.imshow("new_image", self.image)
+            # cv2.waitKey(0)
+
         for i in range(1):
             img_gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
-            ret, thresh = cv2.threshold(img_gray, 0, 254, 0)
+            ret, thresh = cv2.threshold(img_gray, 0, 255, 0)
             contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
             contours = sorted(contours, key=cv2.contourArea, reverse=True)
             contours = contours[:self.size]
@@ -232,11 +267,10 @@ class Puzzle:
                 rotated_puzzle[y_offset:y_offset + piece.shape[0], x_offset:x_offset + piece.shape[1]] = piece
         self.image = rotated_puzzle.copy()
         # Image van scrambled vergroten na het draaien, hierdoor betere contours te bepalen
-        self.image = cv2.resize(self.image, None, fx=1.25, fy=1.25, interpolation=cv2.INTER_CUBIC)
+        # self.image = cv2.resize(self.image, None, fx=1.15, fy=1.15, interpolation=0)
         cv2.imshow("scrambled2rotate", self.image)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
-        self.type = 3
         # desktop_path = os.path.join(os.path.expanduser('~'), 'Desktop')
         # folder_name = 'output_folder'
         # output_folder = os.path.join(desktop_path, folder_name)
@@ -340,4 +374,4 @@ class Puzzle:
         for piece in self.puzzle_pieces:
             for corner in piece.corners:
                 cv2.circle(img_corners, corner, 3, (0, 255, 255), -1)
-        self.show(img_corners)
+            self.show(img_corners)

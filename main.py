@@ -11,7 +11,7 @@ def main():
     p.initialise_puzzle()
     # p.show()
     p.draw_contours()
-    # p.draw_corners()
+    p.draw_corners()
     p.match()
     # p.show(p.solved_image)
     # process_all("data/Jigsaw_shuffled")
