@@ -132,8 +132,8 @@ class Puzzle:
                 if piece_w < 85:
                     begin = 30
                 for i in range(begin, 0, -5):
-                    for j in range(begin, 0, -2):
-                        for k in range(25, 0, -2):
+                    for j in range(begin, 0, -4):
+                        for k in range(25, 0, -4):
                             lines = cv2.HoughLinesP(cnt, 1, np.pi / 180, threshold=i, minLineLength=j, maxLineGap=k)
                             if lines is not None and len(lines) >= 4:
                                 lines = sorted(lines, key=lambda line: line[0][1], reverse=True)[:4]
