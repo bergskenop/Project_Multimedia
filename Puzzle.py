@@ -4,7 +4,6 @@ from PuzzlePiece import *
 import re
 from helper import *
 import random
-import math
 
 
 # Logica achter klassenverdeling
@@ -71,22 +70,6 @@ class Puzzle:
             cv2.drawContours(contour_img, self.contours, n, (255, 255, 255), thickness=cv2.FILLED)
             gray = cv2.cvtColor(contour_img, cv2.COLOR_BGR2GRAY)
 
-            # Hoeken zoeken met haris corner
-
-            # kernel = np.ones((3, 3), np.uint8)
-            # dilate = cv2.dilate(gray, kernel, iterations=1)
-            # erosion = cv2.erode(gray, kernel, iterations=1)
-            # cnt = cv2.bitwise_xor(erosion, dilate, mask=None)
-            # qual=0.1, minDist=10, blocksize=7, k=0.21 => alles shuffled/rotated behalve 3 puzzels => 5x5 01, 03 en 06
-            # Werkt nog niet goed voor scrambled puzzelstukken
-            # corners = cv2.goodFeaturesToTrack(cnt, maxCorners=4, qualityLevel=0.1, minDistance=10,
-            #                                   blockSize=7, useHarrisDetector=True, k=0.21)
-            # corners = np.int32(corners)
-            # temp_corners = []
-            # for c in corners:
-            #     x, y = c.ravel()
-            #     temp_corners.append((x, y))
-
             contour = np.squeeze(contour)
             list_contours = list(zip(contour[:, 0], contour[:, 1]))
 
@@ -97,57 +80,83 @@ class Puzzle:
             piece_w = np.abs(min_x - max_x)
             piece_h = np.abs(min_y - max_y)
 
-            blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-            cnt = cv2.Canny(blurred, 50, 150, apertureSize=3)
-
-            detect_image = np.zeros_like(self.image)
-            detect_image = cv2.cvtColor(detect_image, cv2.COLOR_BGR2GRAY)
             break_outer = False
             y_n = []
             x_n = []
-            begin = 100
-            if piece_w < 250 or piece_h < 250:
-                begin = 75
-            if piece_w < 200 or piece_h < 200:
-                begin = 60
-            if piece_w < 130:
-                begin = 50
-            if piece_w < 85:
-                begin = 30
-            end_threshhold = begin
-            end_min_length = begin
-            end_max_line_gap = 25
-            for i in range(begin, 0, -5):
-                for j in range(begin, 0, -2):
-                    for k in range(25, 0, -2):
-                        lines = cv2.HoughLinesP(cnt, 1, np.pi / 180, threshold=i, minLineLength=j, maxLineGap=k)
-                        if lines is not None and len(lines) >= 4:
-                            lines = sorted(lines, key=lambda line: line[0][1], reverse=True)[:4]
 
-                            for line in lines:
-                                x1, y1, x2, y2 = line[0]
-                                cv2.line(detect_image, (x1, y1), (x2, y2), (255, 255, 255), 1)
-                                if y1 + 10 > y2 > y1 - 10 and (len(y_n) == 0 or np.abs(y_n[0] - y1) > int(piece_h * 0.6)):
-                                    y_n.append(y1)
-                                if x1 + 10 > x2 > x1 - 10 and (len(x_n) == 0 or np.abs(x_n[0] - x1) > int(piece_w * 0.6)):
-                                    x_n.append(x1)
+            if self.type == 2:
+                if piece_w < 150 or piece_h < 150:
+                    blur = cv2.GaussianBlur(gray, (3, 3), 0)
+                    cnt = cv2.Canny(blur, 50, 150, apertureSize=5)
+                else:
+                    cnt = cv2.Canny(gray, 50, 150, apertureSize=5)
 
-                            if len(x_n) == 2 and len(y_n) == 2:
-                                break_outer = True
-                                end_threshhold = i
-                                end_min_length = j
-                                end_max_line_gap = k
-                                break  # This will break out of the inner loop
-                            else:
-                                y_n = []
-                                x_n = []
+                for i in [10, 30, 50, 80, 100]:
+                    for j in range(200, 0, -2):
+                        for k in range(60, 0, -2):
+                            lines = cv2.HoughLinesP(cnt, 1, np.pi / 180, threshold=i, minLineLength=j, maxLineGap=k)
+                            if lines is not None and len(lines) >= 4:
+                                lines = sorted(lines, key=lambda line: line[0][1], reverse=True)[:4]
+
+                                for line in lines:
+                                    x1, y1, x2, y2 = line[0]
+                                    if y1 + 10 > y2 > y1 - 10 and (
+                                            len(y_n) == 0 or np.abs(y_n[0] - y1) > int(piece_h * 0.6)):
+                                        y_n.append(y1)
+                                    if x1 + 10 > x2 > x1 - 10 and (
+                                            len(x_n) == 0 or np.abs(x_n[0] - x1) > int(piece_w * 0.6)):
+                                        x_n.append(x1)
+
+                                if len(x_n) == 2 and len(y_n) == 2:
+                                    break_outer = True
+                                    break  # This will break out of the inner loop
+                                else:
+                                    y_n = []
+                                    x_n = []
+                        if break_outer:
+                            break
                     if break_outer:
                         break
-                if break_outer:
-                    break
-                if i < 4:
-                    print("&&&&&&&&&&&&&&&&&&& geen hoeken gevonden &&&&&&&&&&&&&&&&&&&")
-            print(f"threshold = {end_threshhold}, min length = {end_min_length}, max line gap = {end_max_line_gap} bij [{piece_w}, {piece_h}]")
+
+            else:
+                blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+                cnt = cv2.Canny(blurred, 50, 150, apertureSize=3)
+
+                begin = 100
+                if piece_w < 250 or piece_h < 250:
+                    begin = 75
+                if piece_w < 200 or piece_h < 200:
+                    begin = 60
+                if piece_w < 130:
+                    begin = 50
+                if piece_w < 85:
+                    begin = 30
+                for i in range(begin, 0, -5):
+                    for j in range(begin, 0, -2):
+                        for k in range(25, 0, -2):
+                            lines = cv2.HoughLinesP(cnt, 1, np.pi / 180, threshold=i, minLineLength=j, maxLineGap=k)
+                            if lines is not None and len(lines) >= 4:
+                                lines = sorted(lines, key=lambda line: line[0][1], reverse=True)[:4]
+
+                                for line in lines:
+                                    x1, y1, x2, y2 = line[0]
+                                    if y1 + 10 > y2 > y1 - 10 and (
+                                            len(y_n) == 0 or np.abs(y_n[0] - y1) > int(piece_h * 0.6)):
+                                        y_n.append(y1)
+                                    if x1 + 10 > x2 > x1 - 10 and (
+                                            len(x_n) == 0 or np.abs(x_n[0] - x1) > int(piece_w * 0.6)):
+                                        x_n.append(x1)
+
+                                if len(x_n) == 2 and len(y_n) == 2:
+                                    break_outer = True
+                                    break  # This will break out of the inner loop
+                                else:
+                                    y_n = []
+                                    x_n = []
+                        if break_outer:
+                            break
+                    if break_outer:
+                        break
 
             temp_corners = [(x_n[0], y_n[0]), (x_n[1], y_n[0]), (x_n[0], y_n[1]), (x_n[1], y_n[1])]
 
@@ -178,18 +187,16 @@ class Puzzle:
     def scrambled2rotated(self):
         # We gebruiken 2 enlarge methodes en nemen een bitwise and van de 2 om het beste resultaat te bekomen,
         # dit doen we omdat de contours niet meer juist gedecteerd werden na het draaien avn de image
-        afb1 = cv2.resize(self.image, None, fx=1.5, fy=1.5, interpolation=2)
-        # cv2.imshow("test", afb1)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
-        afb1_gray = cv2.cvtColor(afb1, cv2.COLOR_BGR2GRAY)
-        afb2 = cv2.resize(self.image, None, fx=1.5, fy=1.5, interpolation=0)
-        afb2_gray = cv2.cvtColor(afb2, cv2.COLOR_BGR2GRAY)
-        _, thresh1 = cv2.threshold(afb1_gray, 0, 255, 0)
-        _, thresh2 = cv2.threshold(afb2_gray, 0, 255, 0)
-        mask = cv2.bitwise_and(thresh1, thresh2, mask=None)
-        mask = np.stack([mask, mask, mask], axis=2)
-        self.image = cv2.bitwise_and(afb1, mask, mask=None)
+        if self.size >= 9:
+            afb1 = cv2.resize(self.image, None, fx=1.5, fy=1.5, interpolation=2)
+            afb1_gray = cv2.cvtColor(afb1, cv2.COLOR_BGR2GRAY)
+            afb2 = cv2.resize(self.image, None, fx=1.5, fy=1.5, interpolation=0)
+            afb2_gray = cv2.cvtColor(afb2, cv2.COLOR_BGR2GRAY)
+            _, thresh1 = cv2.threshold(afb1_gray, 0, 255, 0)
+            _, thresh2 = cv2.threshold(afb2_gray, 0, 255, 0)
+            mask = cv2.bitwise_and(thresh1, thresh2, mask=None)
+            mask = np.stack([mask, mask, mask], axis=2)
+            self.image = cv2.bitwise_and(afb1, mask, mask=None)
 
         img_gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
         ret, thresh = cv2.threshold(img_gray, 0, 255, 0)
@@ -275,7 +282,7 @@ class Puzzle:
             type_stuk_string = "ROTATED"
         cv2.destroyAllWindows()
         cv2.imshow(f'PUZZLE {self.rows}x{self.columns}_0{self.nummer} {type_stuk_string}', show_image)
-        cv2.waitKey(delay)
+        cv2.waitKey(1000)
 
 
     def draw_contours(self):
