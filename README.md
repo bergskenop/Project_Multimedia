@@ -1,6 +1,6 @@
 # Project Multimedia: puzzels
 
-Auteur: Geeraerts Lennard, Van Den Berghe Bryan
+Auteur: Geeraert Lennard, Van Den Berghe Bryan
 
 Datum: 17/12/2023
 
@@ -29,7 +29,7 @@ IDE: PyCharm
 --------------------------------------------------------------------------------
 
 Bestanden:
-- Main.py
+- main.py
 - Puzzle.py
 - Piece.py
 - Edge.py
@@ -38,7 +38,7 @@ Bestanden:
     
 Mappen:
 - Datapath wordt bepaald aan de hand van een verkenner
-- Om alle data wordt doorlopen dient deze in de folder data geplaatst te worden. 
+- Om alle data te doorlopen dient deze in de folder data geplaatst te worden. 
     
 main.py
     python script dat een object van het type puzzel aanmaakt en deze daarna oplost

@@ -36,7 +36,6 @@ class Puzzle:
             self.scrambled2rotated()
         self.set_contour()  # Contour detectie van puzzelstukken
         self.set_puzzle_pieces()
-        print("Alle hoeken gedetecteerd")
 
 
     def set_puzzle_parameters(self):
@@ -117,7 +116,6 @@ class Puzzle:
                             break
                     if break_outer:
                         break
-
             else:
                 blurred = cv2.GaussianBlur(gray, (5, 5), 0)
                 cnt = cv2.Canny(blurred, 50, 150, apertureSize=3)
@@ -282,7 +280,7 @@ class Puzzle:
             type_stuk_string = "ROTATED"
         cv2.destroyAllWindows()
         cv2.imshow(f'PUZZLE {self.rows}x{self.columns}_0{self.nummer} {type_stuk_string}', show_image)
-        cv2.waitKey(1000)
+        cv2.waitKey(delay)
 
 
     def draw_contours(self):
@@ -296,4 +294,4 @@ class Puzzle:
         for piece in self.puzzle_pieces:
             for corner in piece.corners:
                 cv2.circle(img_corners, corner, 3, (0, 255, 255), -1)
-            self.show(img_corners)
+        self.show(img_corners)
